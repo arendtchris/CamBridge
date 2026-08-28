@@ -1465,76 +1465,156 @@
      * =========================================================
      */
 
-    async function openNormalSerial()
+    function sleep(ms)
     {
-      if (!serialPort)
-      {
-        throw new Error(
-          "Kein Serial-Port vorhanden."
-        );
-      }
+      return new Promise(
+        (resolve) =>
+          setTimeout(resolve, ms)
+      );
+    }
 
-      /*
-       * The bootloader transport has already
-       * been disconnected.
-       */
+    async function ensurePortClosed(port)
+    {
+      if (!port) return;
 
       try
       {
-        if (
-          serialPort.readable ||
-          serialPort.writable
-        )
+        if (serialReader)
         {
-          /*
-           * Port may already be open.
-           * In that case we continue.
-           */
-        }
-        else
-        {
-          await serialPort.open({
-            baudRate:
-              SERIAL_BAUDRATE,
-
-            dataBits: 8,
-
-            stopBits: 1,
-
-            parity: "none",
-
-            bufferSize: 4096,
-
-            flowControl: "none"
-          });
+          try { await serialReader.cancel(); } catch (_) {}
+          try { serialReader.releaseLock(); } catch (_) {}
+          serialReader = null;
         }
       }
-      catch (error)
+      catch (_) {}
+
+      try
       {
-        /*
-         * Some browsers keep the port
-         * internally open for a short moment.
-         */
-
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              250
-            )
-        );
-
-        if (
-          !serialPort.readable &&
-          !serialPort.writable
-        )
+        if (port.readable || port.writable)
         {
-          await serialPort.open({
-            baudRate:
-              SERIAL_BAUDRATE
+          await port.close();
+        }
+      }
+      catch (_) {}
+    }
+
+    /**
+     * After esptool hard_reset, ESP32-C3 native USB often
+     * re-enumerates. Reuse port if possible, otherwise
+     * request again / wait for reconnect.
+     */
+    async function reopenPortAfterBootloader()
+    {
+      await ensurePortClosed(serialPort);
+      await sleep(400);
+
+      // Prefer previously granted port if still usable
+      if (serialPort)
+      {
+        for (let attempt = 0; attempt < 4; attempt++)
+        {
+          try
+          {
+            await serialPort.open({
+              baudRate: SERIAL_BAUDRATE,
+              dataBits: 8,
+              stopBits: 1,
+              parity: "none",
+              bufferSize: 8192,
+              flowControl: "none"
+            });
+            return serialPort;
+          }
+          catch (e)
+          {
+            console.warn(
+              "Port reopen attempt",
+              attempt + 1,
+              e
+            );
+            await sleep(350 + attempt * 200);
+          }
+        }
+      }
+
+      // Fall back: any already-authorized port
+      try
+      {
+        const ports =
+          await navigator.serial.getPorts();
+
+        for (const p of ports)
+        {
+          try
+          {
+            await ensurePortClosed(p);
+            await p.open({
+              baudRate: SERIAL_BAUDRATE,
+              dataBits: 8,
+              stopBits: 1,
+              parity: "none",
+              bufferSize: 8192,
+              flowControl: "none"
+            });
+            serialPort = p;
+            return p;
+          }
+          catch (_) {}
+        }
+      }
+      catch (_) {}
+
+      // Last resort: user picks port again
+      serialLog(
+        "\nUSB-Port nach Reset neu wählen …\n"
+      );
+
+      serialPort =
+        await navigator.serial.requestPort({});
+
+      await serialPort.open({
+        baudRate: SERIAL_BAUDRATE,
+        dataBits: 8,
+        stopBits: 1,
+        parity: "none",
+        bufferSize: 8192,
+        flowControl: "none"
+      });
+
+      return serialPort;
+    }
+
+    async function openNormalSerial()
+    {
+      serialKeepReading = false;
+
+      await reopenPortAfterBootloader();
+
+      if (
+        !serialPort ||
+        !serialPort.readable
+      )
+      {
+        throw new Error(
+          "Serial-Port konnte nach Bootloader nicht geöffnet werden."
+        );
+      }
+
+      // Pulse DTR so the running firmware resets and prints boot log
+      try
+      {
+        if (serialPort.setSignals)
+        {
+          await serialPort.setSignals({
+            dataTerminalReady: false
+          });
+          await sleep(50);
+          await serialPort.setSignals({
+            dataTerminalReady: true
           });
         }
       }
+      catch (_) {}
 
       setSerialStatus(
         "USB Serial verbunden · 115200",
@@ -1554,12 +1634,16 @@
       );
 
       serialLog(
+        "Warte auf ESP-Ausgabe …\n"
+      );
+
+      serialLog(
         "----------------------------------------\n"
       );
 
-      serialKeepReading =
-        true;
+      serialKeepReading = true;
 
+      // fire-and-forget reader
       readSerialLoop();
     }
 
@@ -1577,28 +1661,20 @@
         !serialPort.readable
       )
       {
+        serialLog(
+          "\n[Serial] readable stream fehlt — Port nicht offen?\n"
+        );
         return;
       }
 
-      const decoder =
-        new TextDecoderStream();
-
-      const readableStreamClosed =
-        serialPort.readable.pipeTo(
-          decoder.writable
-        )
-        .catch(
-          () => {}
-        );
-
+      // Direct reader + TextDecoder (more reliable than pipeTo after esptool)
+      const decoder = new TextDecoder();
       serialReader =
-        decoder.readable.getReader();
+        serialPort.readable.getReader();
 
       try
       {
-        while (
-          serialKeepReading
-        )
+        while (serialKeepReading)
         {
           const {
             value,
@@ -1609,16 +1685,22 @@
           if (done)
             break;
 
-          if (value)
+          if (value && value.length)
           {
             serialLog(
-              value
+              decoder.decode(
+                value,
+                { stream: true }
+              )
             );
           }
         }
       }
       catch (error)
       {
+        if (!serialKeepReading)
+          return;
+
         console.error(
           "Serial read error:",
           error
@@ -1626,8 +1708,15 @@
 
         serialLog(
           "\nSerial read error: " +
-          error.message +
+          (error && error.message
+            ? error.message
+            : String(error)) +
           "\n"
+        );
+
+        setSerialStatus(
+          "Serial getrennt",
+          "error"
         );
       }
       finally
@@ -1638,10 +1727,7 @@
         }
         catch (_) {}
 
-        serialReader =
-          null;
-
-        await readableStreamClosed;
+        serialReader = null;
       }
     }
 
@@ -1955,7 +2041,6 @@
       serialKeepReading =
         false;
 
-
       try
       {
         if (serialReader)
@@ -1965,34 +2050,29 @@
       }
       catch (_) {}
 
-
       try
       {
-        if (
-          serialPort &&
-          serialPort.readable
-        )
+        if (serialReader)
         {
-          /*
-           * Reader pipeline closes here.
-           */
+          serialReader.releaseLock();
         }
       }
       catch (_) {}
 
+      serialReader = null;
 
       try
       {
         if (
           serialPort &&
-          serialPort.opened
+          (serialPort.readable ||
+            serialPort.writable)
         )
         {
           await serialPort.close();
         }
       }
       catch (_) {}
-
 
       setSerialStatus(
         "Nicht verbunden"
@@ -2488,6 +2568,13 @@
 
 
         /*
+         * ESP32-C3 USB-CDC often re-enumerates after hard_reset.
+         * Wait before reopening application serial.
+         */
+        await sleep(1200);
+
+
+        /*
          * -----------------------------------------------------
          * OPEN NORMAL SERIAL
          * -----------------------------------------------------
@@ -2503,17 +2590,11 @@
 
         /*
          * -----------------------------------------------------
-         * GIVE ESP SOME TIME TO BOOT
+         * GIVE ESP SOME TIME TO BOOT / PRINT
          * -----------------------------------------------------
          */
 
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              700
-            )
-        );
+        await sleep(1500);
 
 
         /*
