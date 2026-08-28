@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>GoPro Bridge BLE – Web Installer</title>
-  <meta name="description" content="Flash GoPro Bridge BLE firmware to ESP32-C3 from the browser. Hardware-ID auslesen." />
+
+  <meta
+    name="description"
+    content="Flash GoPro Bridge BLE firmware to ESP32-C3 from the browser. Hardware-ID und Lizenzstatus prüfen."
+  />
+
   <style>
     :root {
       --bg: #0d1117;
@@ -12,443 +18,1777 @@
       --border: #30363d;
       --text: #c9d1d9;
       --muted: #8b949e;
+
       --accent: #238636;
       --accent-hover: #2ea043;
+
       --link: #58a6ff;
+
       --info: #1f6feb;
       --info-hover: #388bfd;
+
+      --ok: #3fb950;
+      --error: #f0a0a0;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+      font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        Segoe UI,
+        Roboto,
+        sans-serif;
+
       background: var(--bg);
       color: var(--text);
+
       line-height: 1.5;
     }
+
     .wrap {
       max-width: 640px;
       margin: 0 auto;
       padding: 2rem 1.25rem 3rem;
     }
+
     h1 {
       font-size: 1.75rem;
       font-weight: 650;
       margin: 0 0 0.35rem;
       letter-spacing: -0.02em;
     }
+
     .tag {
       display: inline-block;
+
       font-size: 0.75rem;
       color: var(--muted);
+
       border: 1px solid var(--border);
       border-radius: 999px;
+
       padding: 0.15rem 0.6rem;
       margin-bottom: 1rem;
     }
-    p.lead { color: var(--muted); margin: 0 0 1.5rem; }
+
+    p.lead {
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+    }
+
     .card {
       background: var(--card);
+
       border: 1px solid var(--border);
       border-radius: 12px;
+
       padding: 1.25rem 1.35rem;
       margin-bottom: 1rem;
     }
+
     .card h2 {
       font-size: 0.95rem;
       margin: 0 0 0.75rem;
       font-weight: 600;
     }
-    ol, ul { margin: 0; padding-left: 1.2rem; color: var(--muted); }
-    li { margin: 0.35rem 0; }
+
+    ol,
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+    }
+
+    li {
+      margin: 0.35rem 0;
+    }
+
     .install {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
+
       gap: 1rem;
+
       margin: 1.25rem 0 0.5rem;
     }
+
     esp-web-install-button {
       --esp-tools-button-color: #fff;
       --esp-tools-button-background: var(--accent);
       --esp-tools-button-border-radius: 8px;
     }
+
     .btn {
       appearance: none;
+
       border: none;
       border-radius: 8px;
+
       padding: 0.55rem 1.1rem;
+
       font-size: 0.95rem;
       font-weight: 600;
+
       cursor: pointer;
+
       color: #fff;
       background: var(--info);
+
       transition: background 0.15s;
     }
-    .btn:hover:not(:disabled) { background: var(--info-hover); }
+
+    .btn:hover:not(:disabled) {
+      background: var(--info-hover);
+    }
+
     .btn:disabled {
       opacity: 0.55;
       cursor: not-allowed;
     }
+
     .btn-secondary {
       background: transparent;
+
       border: 1px solid var(--border);
+
       color: var(--text);
     }
+
     .btn-secondary:hover:not(:disabled) {
       background: #21262d;
       border-color: #484f58;
     }
+
     .hint {
       font-size: 0.85rem;
       color: var(--muted);
     }
-    a { color: var(--link); }
+
+    a {
+      color: var(--link);
+    }
+
     code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+
       font-size: 0.85em;
+
       background: #0d1117;
+
       padding: 0.1em 0.35em;
+
       border-radius: 4px;
     }
+
     footer {
       margin-top: 2rem;
+
       font-size: 0.8rem;
       color: var(--muted);
     }
+
     .unsupported {
       display: none;
+
       margin-top: 0.75rem;
+
       padding: 0.75rem 1rem;
+
       border-radius: 8px;
+
       background: #3d1f1f;
       border: 1px solid #6e2c2c;
-      color: #f0a0a0;
+
+      color: var(--error);
+
       font-size: 0.9rem;
     }
+
     .hw-result {
       display: none;
+
       margin-top: 1rem;
+
       padding: 0.9rem 1rem;
+
       border-radius: 8px;
+
       background: #0d1117;
       border: 1px solid var(--border);
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+
       font-size: 0.85rem;
     }
-    .hw-result.visible { display: block; }
+
+    .hw-result.visible {
+      display: block;
+    }
+
     .hw-result .row {
       display: flex;
       flex-wrap: wrap;
+
       gap: 0.35rem 1rem;
+
       margin: 0.25rem 0;
     }
+
     .hw-result .label {
       color: var(--muted);
-      min-width: 7.5rem;
+      min-width: 8.5rem;
     }
+
     .hw-result .value {
       color: var(--text);
       word-break: break-all;
     }
+
     .hw-result .mac {
-      color: #3fb950;
+      color: var(--ok);
+
       font-weight: 600;
+
       letter-spacing: 0.02em;
     }
+
     .hw-status {
       margin-top: 0.75rem;
+
       font-size: 0.85rem;
+
       color: var(--muted);
+
       min-height: 1.25em;
     }
-    .hw-status.error { color: #f0a0a0; }
-    .hw-status.ok { color: #3fb950; }
+
+    .hw-status.error {
+      color: var(--error);
+    }
+
+    .hw-status.ok {
+      color: var(--ok);
+    }
+
     .actions {
       display: flex;
       flex-wrap: wrap;
+
       gap: 0.6rem;
+
       margin-top: 1rem;
     }
+
+    /* -------------------------------------------------------
+       License
+       ------------------------------------------------------- */
+
+    .license-card {
+      border-color: #30363d;
+    }
+
+    .license-status {
+      font-size: 1rem;
+
+      font-weight: 700;
+
+      margin-top: 0.25rem;
+    }
+
+    .license-status.pending {
+      color: var(--muted);
+    }
+
+    .license-status.checking {
+      color: var(--info);
+    }
+
+    .license-status.active {
+      color: var(--ok);
+    }
+
+    .license-status.inactive {
+      color: var(--error);
+    }
+
+    .license-status.error {
+      color: var(--error);
+    }
+
+    .license-debug {
+      display: none;
+
+      margin-top: 1rem;
+
+      padding: 0.75rem 1rem;
+
+      border-radius: 8px;
+
+      background: #0d1117;
+
+      border: 1px solid var(--border);
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+
+      font-size: 0.8rem;
+    }
+
+    .license-debug.visible {
+      display: block;
+    }
   </style>
-  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
+  <script
+    type="module"
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
 </head>
+
 <body>
-  <div class="wrap">
-    <span class="tag">ESP32-C3</span>
-    <h1>GoPro Bridge BLE</h1>
-    <p class="lead">
-      Firmware aus dem Browser flashen (Chrome / Edge). GoPro-Status ins Betaflight-OSD über MSP.
+
+<div class="wrap">
+
+  <span class="tag">ESP32-C3</span>
+
+  <h1>GoPro Bridge BLE</h1>
+
+  <p class="lead">
+    Firmware aus dem Browser flashen (Chrome / Edge).
+    GoPro-Status ins Betaflight-OSD über MSP.
+  </p>
+
+
+  <!-- =====================================================
+       INSTALL
+       ====================================================== -->
+
+  <div class="card">
+
+    <h2>Install</h2>
+
+    <ol>
+      <li>
+        Daten-USB-Kabel verwenden, Serial Monitor /
+        andere Tools am Port schließen.
+      </li>
+
+      <li>
+        ESP32 direkt am PC anschließen
+        (nicht nur über den Flight Controller).
+      </li>
+
+      <li>
+        <strong>Connect</strong> klicken,
+        Port wählen, Dialog folgen.
+      </li>
+
+      <li>
+        Erster Flash kann Bonds und NVS-Einstellungen löschen.
+      </li>
+    </ol>
+
+    <div class="install">
+
+      <esp-web-install-button manifest="./manifest.json">
+
+        <button slot="activate">
+          Connect &amp; install
+        </button>
+
+        <span
+          slot="unsupported"
+          class="unsupported"
+          style="display:block">
+
+          Web Serial ist in diesem Browser nicht verfügbar.
+          Desktop Chrome oder Edge über HTTPS nutzen.
+
+        </span>
+
+        <span
+          slot="not-allowed"
+          class="unsupported"
+          style="display:block">
+
+          Keine Berechtigung –
+          Seite muss über HTTPS oder localhost laufen.
+
+        </span>
+
+      </esp-web-install-button>
+
+    </div>
+
+    <p class="hint">
+
+      Boot-Modus nötig?
+
+      <code>BOOT</code> halten,
+
+      <code>RESET</code> drücken,
+
+      <code>BOOT</code> loslassen,
+
+      dann erneut Connect.
+
     </p>
 
-    <div class="card">
-      <h2>Install</h2>
-      <ol>
-        <li>Daten-USB-Kabel verwenden, Serial Monitor / andere Tools am Port schließen.</li>
-        <li>ESP32 direkt am PC anschließen (nicht nur über den Flight Controller).</li>
-        <li><strong>Connect</strong> klicken, Port wählen, Dialog folgen.</li>
-        <li>Erster Flash kann Bonds und NVS-Einstellungen löschen.</li>
-      </ol>
-
-      <div class="install">
-        <esp-web-install-button manifest="./manifest.json">
-          <button slot="activate">Connect &amp; install</button>
-          <span slot="unsupported" class="unsupported" style="display:block">
-            Web Serial ist in diesem Browser nicht verfügbar. Desktop Chrome oder Edge über HTTPS nutzen.
-          </span>
-          <span slot="not-allowed" class="unsupported" style="display:block">
-            Keine Berechtigung – Seite muss über HTTPS oder localhost laufen.
-          </span>
-        </esp-web-install-button>
-      </div>
-      <p class="hint">
-        Boot-Modus nötig? <code>BOOT</code> halten, <code>RESET</code> drücken, <code>BOOT</code> loslassen, dann erneut Connect.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2>Hardware-Nummer auslesen</h2>
-      <p class="hint" style="margin:0 0 0.75rem">
-        Liest Chip-Typ und MAC-Adresse (eindeutige Hardware-ID) über den ROM-Bootloader.
-        Gerät wird kurz zurückgesetzt – danach ggf. erneut in Boot-Modus.
-      </p>
-      <ol>
-        <li>Gleiches Daten-USB-Kabel, Port freigeben (kein Install/Serial Monitor parallel).</li>
-        <li>Bei Bedarf Boot-Modus: <code>BOOT</code> halten → <code>RESET</code> → <code>BOOT</code> loslassen.</li>
-        <li><strong>Hardware-ID lesen</strong> klicken und den ESP-Port wählen.</li>
-      </ol>
-
-      <div class="actions">
-        <button type="button" class="btn" id="hwReadBtn">Hardware-ID lesen</button>
-        <button type="button" class="btn btn-secondary" id="hwCopyBtn" disabled>getEfuseMac kopieren</button>
-      </div>
-      <p class="hw-status" id="hwStatus"></p>
-      <div class="hw-result" id="hwResult" aria-live="polite">
-        <div class="row"><span class="label">Chip</span><span class="value" id="hwChip">—</span></div>
-        <div class="row"><span class="label">MAC</span><span class="value" id="hwMac">—</span></div>
-        <div class="row"><span class="label">getEfuseMac()</span><span class="value mac" id="hwEfuse">—</span></div>
-        <div class="row"><span class="label">Features</span><span class="value" id="hwFeatures">—</span></div>
-      </div>
-      <p class="hint" id="hwUnsupported" style="display:none;margin-top:0.75rem;color:#f0a0a0">
-        Web Serial nicht verfügbar. Desktop Chrome / Edge über HTTPS oder localhost verwenden.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2>Nach dem Flashen</h2>
-      <ul>
-        <li>Wi‑Fi SoftAP: SSID <code>GoProBridge</code> · Passwort <code>gopro1234</code></li>
-        <li>Portal: <code>http://192.168.4.1</code></li>
-        <li>FC UART: MSP @ 115200, TX/RX gekreuzt, gemeinsames GND</li>
-        <li>OSD: Custom Message 1–4 in Betaflight aktivieren</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2>Firmware-Binaries</h2>
-      <p class="hint" style="margin:0">
-        Erwartet Dateien unter <code>firmware/esp32c3/</code>.
-        Siehe <code>firmware/HOW_TO_ADD_BINS.md</code> im Repo.
-      </p>
-    </div>
-
-    <footer>
-      Not affiliated with GoPro ·
-      <a href="https://github.com/arendtchris/CamBridge">Repository</a>
-    </footer>
   </div>
 
-  <script type="module">
-    // bundle.js (not lib/index.js) — works in the browser without extra resolvers
-    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.5.6/bundle.js";
 
-    const btn = document.getElementById("hwReadBtn");
-    const copyBtn = document.getElementById("hwCopyBtn");
-    const statusEl = document.getElementById("hwStatus");
-    const resultEl = document.getElementById("hwResult");
-    const chipEl = document.getElementById("hwChip");
-    const macEl = document.getElementById("hwMac");
-    const efuseEl = document.getElementById("hwEfuse");
-    const featuresEl = document.getElementById("hwFeatures");
-    const unsupportedEl = document.getElementById("hwUnsupported");
+  <!-- =====================================================
+       HARDWARE
+       ====================================================== -->
 
-    let lastMac = "";
-    let lastEfuse = "";
+  <div class="card">
 
-    /** Arduino ESP.getEfuseMac(): writes 6 MAC bytes into uint64 little-endian. */
-    function macToEfuseMac(macStr) {
-      if (!macStr) return "";
-      const parts = macStr.trim().split(/[:\-\s]/).filter(Boolean);
-      if (parts.length < 6) return "";
-      const bytes = parts.slice(0, 6).map((h) => parseInt(h, 16));
-      if (bytes.some((b) => Number.isNaN(b))) return "";
-      // same layout as: esp_efuse_mac_get_default((uint8_t*)&chipmacid)
-      let v = 0n;
-      for (let i = 0; i < 6; i++) {
-        v |= BigInt(bytes[i] & 0xff) << BigInt(8 * i);
-      }
-      // common Arduino print: %04X%08X  (high 16 + low 32) → 12 hex digits
-      const high = Number((v >> 32n) & 0xffffn);
-      const low = Number(v & 0xffffffffn);
-      const hex = high.toString(16).toUpperCase().padStart(4, "0") +
-                  low.toString(16).toUpperCase().padStart(8, "0");
-      return "0x" + hex;
+    <h2>Hardware-Nummer auslesen</h2>
+
+    <p
+      class="hint"
+      style="margin:0 0 0.75rem">
+
+      Liest Chip-Typ und MAC-Adresse
+      (eindeutige Hardware-ID)
+      über den ROM-Bootloader.
+
+      Gerät wird kurz zurückgesetzt –
+      danach ggf. erneut in Boot-Modus.
+
+    </p>
+
+    <ol>
+
+      <li>
+        Gleiches Daten-USB-Kabel,
+        Port freigeben
+        (kein Install/Serial Monitor parallel).
+      </li>
+
+      <li>
+        Bei Bedarf Boot-Modus:
+        <code>BOOT</code> halten →
+        <code>RESET</code> →
+        <code>BOOT</code> loslassen.
+      </li>
+
+      <li>
+        <strong>Hardware-ID lesen</strong>
+        klicken und den ESP-Port wählen.
+      </li>
+
+    </ol>
+
+    <div class="actions">
+
+      <button
+        type="button"
+        class="btn"
+        id="hwReadBtn">
+
+        Hardware-ID lesen
+
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        id="hwCopyBtn"
+        disabled>
+
+        getEfuseMac kopieren
+
+      </button>
+
+    </div>
+
+    <p
+      class="hw-status"
+      id="hwStatus">
+    </p>
+
+    <div
+      class="hw-result"
+      id="hwResult"
+      aria-live="polite">
+
+      <div class="row">
+
+        <span class="label">
+          Chip
+        </span>
+
+        <span
+          class="value"
+          id="hwChip">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          MAC
+        </span>
+
+        <span
+          class="value"
+          id="hwMac">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          getEfuseMac()
+        </span>
+
+        <span
+          class="value mac"
+          id="hwEfuse">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          Features
+        </span>
+
+        <span
+          class="value"
+          id="hwFeatures">
+
+          —
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <p
+      class="hint"
+      id="hwUnsupported"
+      style="
+        display:none;
+        margin-top:0.75rem;
+        color:#f0a0a0">
+
+      Web Serial nicht verfügbar.
+      Desktop Chrome / Edge über HTTPS
+      oder localhost verwenden.
+
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       LICENSE
+       ====================================================== -->
+
+  <div class="card license-card">
+
+    <h2>Lizenz</h2>
+
+    <p
+      class="hint"
+      style="margin:0 0 0.75rem">
+
+      Nach dem Auslesen der Hardware-ID wird
+      automatisch geprüft, ob dieses Gerät
+      für CamBridge lizenziert ist.
+
+    </p>
+
+    <div class="hw-result visible">
+
+      <div class="row">
+
+        <span class="label">
+          Device ID
+        </span>
+
+        <span
+          class="value"
+          id="licenseDeviceId">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          Hardware
+        </span>
+
+        <span
+          class="value"
+          id="licenseHardware">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          Firmware
+        </span>
+
+        <span class="value">
+
+          1.0.0
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          Lizenzstatus
+        </span>
+
+        <span
+          class="license-status pending"
+          id="licenseStatus">
+
+          Noch nicht geprüft
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <p
+      class="hw-status"
+      id="licenseStatusText">
+    </p>
+
+    <div
+      class="license-debug"
+      id="licenseDebug">
+
+      <div class="row">
+
+        <span class="label">
+          Request ID
+        </span>
+
+        <span
+          class="value"
+          id="licenseRequestId">
+
+          —
+
+        </span>
+
+      </div>
+
+      <div class="row">
+
+        <span class="label">
+          Server Hash
+        </span>
+
+        <span
+          class="value"
+          id="licenseHash">
+
+          —
+
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       AFTER FLASH
+       ====================================================== -->
+
+  <div class="card">
+
+    <h2>Nach dem Flashen</h2>
+
+    <ul>
+
+      <li>
+        Wi-Fi SoftAP:
+        SSID <code>GoProBridge</code> ·
+        Passwort <code>gopro1234</code>
+      </li>
+
+      <li>
+        Portal:
+        <code>http://192.168.4.1</code>
+      </li>
+
+      <li>
+        FC UART:
+        MSP @ 115200,
+        TX/RX gekreuzt,
+        gemeinsames GND
+      </li>
+
+      <li>
+        OSD:
+        Custom Message 1–4
+        in Betaflight aktivieren
+      </li>
+
+    </ul>
+
+  </div>
+
+
+  <!-- =====================================================
+       FIRMWARE
+       ====================================================== -->
+
+  <div class="card">
+
+    <h2>Firmware-Binaries</h2>
+
+    <p
+      class="hint"
+      style="margin:0">
+
+      Erwartet Dateien unter
+      <code>firmware/esp32c3/</code>.
+
+      Siehe
+      <code>firmware/HOW_TO_ADD_BINS.md</code>
+      im Repo.
+
+    </p>
+
+  </div>
+
+
+  <footer>
+
+    Not affiliated with GoPro ·
+
+    <a
+      href="https://github.com/arendtchris/CamBridge">
+
+      Repository
+
+    </a>
+
+  </footer>
+
+</div>
+
+
+<script type="module">
+
+  // ==========================================================
+  // ESPTOOL
+  // ==========================================================
+
+  import {
+    ESPLoader,
+    Transport
+  } from
+    "https://unpkg.com/esptool-js@0.5.6/bundle.js";
+
+
+  // ==========================================================
+  // CONFIGURATION
+  // ==========================================================
+
+  const LICENSE_API =
+    "https://gopro-license-server.goprobridge.workers.dev/api/license/check";
+
+  const FIRMWARE_VERSION =
+    "1.0.0";
+
+
+  // ==========================================================
+  // DOM
+  // ==========================================================
+
+  const btn =
+    document.getElementById("hwReadBtn");
+
+  const copyBtn =
+    document.getElementById("hwCopyBtn");
+
+  const statusEl =
+    document.getElementById("hwStatus");
+
+  const resultEl =
+    document.getElementById("hwResult");
+
+  const chipEl =
+    document.getElementById("hwChip");
+
+  const macEl =
+    document.getElementById("hwMac");
+
+  const efuseEl =
+    document.getElementById("hwEfuse");
+
+  const featuresEl =
+    document.getElementById("hwFeatures");
+
+  const unsupportedEl =
+    document.getElementById("hwUnsupported");
+
+
+  // License
+
+  const licenseDeviceIdEl =
+    document.getElementById("licenseDeviceId");
+
+  const licenseHardwareEl =
+    document.getElementById("licenseHardware");
+
+  const licenseStatusEl =
+    document.getElementById("licenseStatus");
+
+  const licenseStatusTextEl =
+    document.getElementById("licenseStatusText");
+
+  const licenseDebugEl =
+    document.getElementById("licenseDebug");
+
+  const licenseRequestIdEl =
+    document.getElementById("licenseRequestId");
+
+  const licenseHashEl =
+    document.getElementById("licenseHash");
+
+
+  // ==========================================================
+  // STATE
+  // ==========================================================
+
+  let lastMac = "";
+
+  let lastEfuse = "";
+
+  let lastDeviceId = "";
+
+
+  // ==========================================================
+  // MAC -> ESP.getEfuseMac()
+  // ==========================================================
+
+  function macToEfuseMac(macStr) {
+
+    if (!macStr) {
+      return "";
     }
+
+    const parts =
+      macStr
+        .trim()
+        .split(/[:\-\s]/)
+        .filter(Boolean);
+
+    if (parts.length < 6) {
+      return "";
+    }
+
+    const bytes =
+      parts
+        .slice(0, 6)
+        .map((h) => parseInt(h, 16));
+
+    if (
+      bytes.some(
+        (b) => Number.isNaN(b)
+      )
+    ) {
+      return "";
+    }
+
+    let v = 0n;
+
+    for (let i = 0; i < 6; i++) {
+
+      v |=
+        BigInt(bytes[i] & 0xff)
+        << BigInt(8 * i);
+    }
+
+    const high =
+      Number(
+        (v >> 32n) & 0xffffn
+      );
+
+    const low =
+      Number(
+        v & 0xffffffffn
+      );
+
+    const hex =
+      high
+        .toString(16)
+        .toUpperCase()
+        .padStart(4, "0")
+      +
+      low
+        .toString(16)
+        .toUpperCase()
+        .padStart(8, "0");
+
+    return "0x" + hex;
+  }
+
+
+  // ==========================================================
+  // DEVICE ID
+  //
+  // IMPORTANT:
+  // We use the same ID that the firmware should use.
+  // ==========================================================
+
+  function createDeviceId(
+    chipName,
+    efuseHex
+  ) {
+
+    if (
+      !chipName ||
+      !efuseHex
+    ) {
+      return "";
+    }
+
+    const chip =
+      chipName
+        .toUpperCase()
+        .replace(/\s+/g, "");
+
+    const efuse =
+      efuseHex
+        .replace(/^0x/i, "")
+        .toUpperCase();
+
+    return `CB-${chip}-${efuse}`;
+  }
+
+
+  // ==========================================================
+  // WEB SERIAL CHECK
+  // ==========================================================
+
+  if (!("serial" in navigator)) {
+
+    btn.disabled = true;
+
+    unsupportedEl.style.display =
+      "block";
+  }
+
+
+  // ==========================================================
+  // HARDWARE STATUS
+  // ==========================================================
+
+  function setStatus(
+    text,
+    kind = ""
+  ) {
+
+    statusEl.textContent =
+      text;
+
+    statusEl.className =
+      "hw-status" +
+      (
+        kind
+          ? " " + kind
+          : ""
+      );
+  }
+
+
+  // ==========================================================
+  // LICENSE STATUS
+  // ==========================================================
+
+  function setLicenseStatus(
+    text,
+    type = "pending"
+  ) {
+
+    licenseStatusEl.textContent =
+      text;
+
+    licenseStatusEl.className =
+      "license-status " +
+      type;
+  }
+
+
+  // ==========================================================
+  // SAFE DISCONNECT
+  // ==========================================================
+
+  async function safeDisconnect(
+    transport
+  ) {
+
+    if (!transport) {
+      return;
+    }
+
+    try {
+
+      await transport.disconnect();
+
+    } catch (_) {}
+
+
+    try {
+
+      if (
+        typeof transport.waitForUnlock ===
+        "function"
+      ) {
+
+        await transport.waitForUnlock(
+          1500
+        );
+      }
+
+    } catch (_) {}
+  }
+
+
+  // ==========================================================
+  // LICENSE CHECK
+  // ==========================================================
+
+  async function checkLicense(
+    deviceId,
+    hardware
+  ) {
+
+    if (!deviceId) {
+
+      setLicenseStatus(
+        "Keine Device ID",
+        "error"
+      );
+
+      return;
+    }
+
+    setLicenseStatus(
+      "Prüfe Lizenz …",
+      "checking"
+    );
+
+    licenseStatusTextEl.textContent =
+      "Verbindung zum Lizenzserver …";
+
+    licenseStatusTextEl.className =
+      "hw-status";
+
+
+    licenseDebugEl.classList.remove(
+      "visible"
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          LICENSE_API,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                id: deviceId,
+
+                firmware:
+                  FIRMWARE_VERSION,
+
+                hardware:
+                  hardware
+              })
+          }
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+      }
+
+
+      const data =
+        await response.json();
+
+
+      // ------------------------------------------------------
+      // Debug information
+      // ------------------------------------------------------
+
+      licenseRequestIdEl.textContent =
+        data.request_id ||
+        "—";
+
+      licenseHashEl.textContent =
+        data.hash ||
+        "—";
+
+
+      licenseDebugEl.classList.add(
+        "visible"
+      );
+
+
+      // ------------------------------------------------------
+      // LICENSED
+      // ------------------------------------------------------
+
+      if (
+        data.licensed === true
+      ) {
+
+        setLicenseStatus(
+          "✓ AKTIVIERT",
+          "active"
+        );
+
+        licenseStatusTextEl.textContent =
+          "Dieses Gerät ist für CamBridge lizenziert.";
+
+        licenseStatusTextEl.className =
+          "hw-status ok";
+
+        return;
+      }
+
+
+      // ------------------------------------------------------
+      // NOT LICENSED
+      // ------------------------------------------------------
+
+      setLicenseStatus(
+        "✗ NICHT LIZENZIERT",
+        "inactive"
+      );
+
+      licenseStatusTextEl.textContent =
+        "Für dieses Gerät wurde keine aktive Lizenz gefunden.";
+
+      licenseStatusTextEl.className =
+        "hw-status error";
+
+
+    } catch (error) {
+
+      console.error(
+        "License check failed:",
+        error
+      );
+
+
+      setLicenseStatus(
+        "⚠ SERVERFEHLER",
+        "error"
+      );
+
+
+      licenseStatusTextEl.textContent =
+        "Lizenzserver konnte nicht erreicht werden: " +
+        (
+          error?.message ||
+          String(error)
+        );
+
+      licenseStatusTextEl.className =
+        "hw-status error";
+    }
+  }
+
+
+  // ==========================================================
+  // READ HARDWARE ID
+  // ==========================================================
+
+  async function readHardwareId() {
 
     if (!("serial" in navigator)) {
-      btn.disabled = true;
-      unsupportedEl.style.display = "block";
+
+      setStatus(
+        "Web Serial nicht verfügbar.",
+        "error"
+      );
+
+      return;
     }
 
-    function setStatus(text, kind = "") {
-      statusEl.textContent = text;
-      statusEl.className = "hw-status" + (kind ? " " + kind : "");
+
+    // --------------------------------------------------------
+    // HTTPS check
+    // --------------------------------------------------------
+
+    if (
+      location.protocol !== "https:" &&
+      location.hostname !== "localhost" &&
+      location.hostname !== "127.0.0.1"
+    ) {
+
+      setStatus(
+        "Seite muss über HTTPS oder localhost laufen (nicht file://).",
+        "error"
+      );
+
+      return;
     }
 
-    async function safeDisconnect(transport) {
-      if (!transport) return;
-      try {
-        await transport.disconnect();
-      } catch (_) {}
-      try {
-        if (typeof transport.waitForUnlock === "function") {
-          await transport.waitForUnlock(1500);
-        }
-      } catch (_) {}
-    }
 
-    async function readHardwareId() {
-      if (!("serial" in navigator)) {
-        setStatus("Web Serial nicht verfügbar.", "error");
-        return;
-      }
+    btn.disabled = true;
 
-      // Must be HTTPS or localhost (GitHub Pages OK; file:// will fail)
-      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
-        setStatus("Seite muss über HTTPS oder localhost laufen (nicht file://).", "error");
-        return;
-      }
+    copyBtn.disabled = true;
 
-      btn.disabled = true;
-      copyBtn.disabled = true;
-      resultEl.classList.remove("visible");
-      setStatus("Port wählen …");
+    resultEl.classList.remove(
+      "visible"
+    );
 
-      let transport = null;
-      let device = null;
 
-      try {
-        device = await navigator.serial.requestPort({});
-        setStatus("Verbinde mit Bootloader (Reset) …");
+    // Reset license state
 
-        transport = new Transport(device, true);
+    lastDeviceId = "";
 
-        const logLines = [];
-        const esploader = new ESPLoader({
+    licenseDeviceIdEl.textContent =
+      "—";
+
+    licenseHardwareEl.textContent =
+      "—";
+
+    licenseRequestIdEl.textContent =
+      "—";
+
+    licenseHashEl.textContent =
+      "—";
+
+    licenseDebugEl.classList.remove(
+      "visible"
+    );
+
+    setLicenseStatus(
+      "Noch nicht geprüft",
+      "pending"
+    );
+
+    licenseStatusTextEl.textContent =
+      "";
+
+
+    setStatus(
+      "Port wählen …"
+    );
+
+
+    let transport = null;
+
+    let device = null;
+
+
+    try {
+
+      // ------------------------------------------------------
+      // Select serial port
+      // ------------------------------------------------------
+
+      device =
+        await navigator.serial.requestPort({});
+
+
+      setStatus(
+        "Verbinde mit Bootloader (Reset) …"
+      );
+
+
+      // ------------------------------------------------------
+      // ESP transport
+      // ------------------------------------------------------
+
+      transport =
+        new Transport(
+          device,
+          true
+        );
+
+
+      const logLines = [];
+
+
+      const esploader =
+        new ESPLoader({
+
           transport,
+
           baudrate: 115200,
+
           terminal: {
+
             clean() {
+
               logLines.length = 0;
             },
+
             writeLine(data) {
-              logLines.push(String(data));
-              console.log("[esptool]", data);
+
+              logLines.push(
+                String(data)
+              );
+
+              console.log(
+                "[esptool]",
+                data
+              );
             },
+
             write(data) {
-              console.log("[esptool]", data);
-            },
+
+              console.log(
+                "[esptool]",
+                data
+              );
+            }
           },
-          debugLogging: false,
+
+          debugLogging: false
         });
 
-        // default_reset: DTR/RTS sequence into ROM bootloader
-        const chipName = await esploader.main("default_reset");
-        setStatus("Chip: " + chipName + " — lese MAC …");
 
-        let mac = "";
-        try {
-          if (esploader.chip && typeof esploader.chip.readMac === "function") {
-            mac = await esploader.chip.readMac(esploader);
-          }
-        } catch (e) {
-          console.warn("readMac failed", e);
+      // ------------------------------------------------------
+      // Connect
+      // ------------------------------------------------------
+
+      const chipName =
+        await esploader.main(
+          "default_reset"
+        );
+
+
+      setStatus(
+        "Chip: " +
+        chipName +
+        " — lese MAC …"
+      );
+
+
+      // ------------------------------------------------------
+      // MAC
+      // ------------------------------------------------------
+
+      let mac = "";
+
+
+      try {
+
+        if (
+          esploader.chip &&
+          typeof
+            esploader.chip.readMac ===
+            "function"
+        ) {
+
+          mac =
+            await esploader.chip.readMac(
+              esploader
+            );
         }
 
-        let features = [];
-        try {
-          if (esploader.chip && typeof esploader.chip.getChipFeatures === "function") {
-            features = await esploader.chip.getChipFeatures(esploader);
-          }
-        } catch (e) {
-          console.warn("getChipFeatures failed", e);
+      } catch (e) {
+
+        console.warn(
+          "readMac failed",
+          e
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // Features
+      // ------------------------------------------------------
+
+      let features = [];
+
+
+      try {
+
+        if (
+          esploader.chip &&
+          typeof
+            esploader.chip.getChipFeatures ===
+            "function"
+        ) {
+
+          features =
+            await esploader.chip.getChipFeatures(
+              esploader
+            );
         }
 
-        let description = chipName || "—";
-        try {
-          if (esploader.chip && typeof esploader.chip.getChipDescription === "function") {
-            description = await esploader.chip.getChipDescription(esploader);
-          }
-        } catch (_) {}
+      } catch (e) {
 
-        // Fallback: CHIP_NAME on the chip object
-        if ((!description || description === "—") && esploader.chip && esploader.chip.CHIP_NAME) {
-          description = esploader.chip.CHIP_NAME;
+        console.warn(
+          "getChipFeatures failed",
+          e
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // Chip description
+      // ------------------------------------------------------
+
+      let description =
+        chipName || "—";
+
+
+      try {
+
+        if (
+          esploader.chip &&
+          typeof
+            esploader.chip.getChipDescription ===
+            "function"
+        ) {
+
+          description =
+            await esploader.chip.getChipDescription(
+              esploader
+            );
         }
 
-        const efuseHex = macToEfuseMac(mac);
+      } catch (_) {}
 
-        chipEl.textContent = description || chipName || "—";
-        macEl.textContent = mac || "—";
-        efuseEl.textContent = efuseHex || "—";
-        featuresEl.textContent = features && features.length ? features.join(", ") : "—";
-        lastMac = mac || "";
-        lastEfuse = efuseHex || "";
-        resultEl.classList.add("visible");
-        copyBtn.disabled = !lastEfuse;
 
-        if (efuseHex) {
-          setStatus("Fertig — entspricht ESP.getEfuseMac().", "ok");
-        } else if (mac) {
-          setStatus("MAC gelesen, Efuse-Format konnte nicht gebildet werden.", "error");
-        } else {
-          setStatus("Chip erkannt, MAC konnte nicht gelesen werden.", "error");
-        }
+      // ------------------------------------------------------
+      // Fallback
+      // ------------------------------------------------------
 
-        try {
-          await esploader.after("hard_reset");
-        } catch (_) {}
-      } catch (err) {
-        console.error(err);
-        const msg = err && err.message ? err.message : String(err);
-        let hint = " Boot-Modus: BOOT halten → RESET → BOOT loslassen, dann erneut.";
-        if (/timeout|Timed out|Failed to connect/i.test(msg)) {
-          hint = " Verbindung fehlgeschlagen — Boot-Modus + Daten-USB-Kabel prüfen.";
-        } else if (/NetworkError|Failed to open/i.test(msg)) {
-          hint = " Port belegt? Serial Monitor / Install schließen.";
-        }
-        setStatus("Fehler: " + msg + hint, "error");
-      } finally {
-        await safeDisconnect(transport);
-        btn.disabled = false;
+      if (
+        (
+          !description ||
+          description === "—"
+        ) &&
+        esploader.chip &&
+        esploader.chip.CHIP_NAME
+      ) {
+
+        description =
+          esploader.chip.CHIP_NAME;
+      }
+
+
+      // ------------------------------------------------------
+      // Efuse
+      // ------------------------------------------------------
+
+      const efuseHex =
+        macToEfuseMac(mac);
+
+
+      // ------------------------------------------------------
+      // Display hardware
+      // ------------------------------------------------------
+
+      chipEl.textContent =
+        description ||
+        chipName ||
+        "—";
+
+      macEl.textContent =
+        mac ||
+        "—";
+
+      efuseEl.textContent =
+        efuseHex ||
+        "—";
+
+      featuresEl.textContent =
+        features &&
+        features.length
+          ? features.join(", ")
+          : "—";
+
+
+      lastMac =
+        mac || "";
+
+      lastEfuse =
+        efuseHex || "";
+
+
+      resultEl.classList.add(
+        "visible"
+      );
+
+
+      copyBtn.disabled =
+        !lastEfuse;
+
+
+      // ------------------------------------------------------
+      // Create Device ID
+      // ------------------------------------------------------
+
+      const deviceId =
+        createDeviceId(
+          description ||
+            chipName,
+          efuseHex
+        );
+
+
+      lastDeviceId =
+        deviceId;
+
+
+      licenseDeviceIdEl.textContent =
+        deviceId ||
+        "—";
+
+      licenseHardwareEl.textContent =
+        description ||
+        chipName ||
+        "—";
+
+
+      // ------------------------------------------------------
+      // Hardware status
+      // ------------------------------------------------------
+
+      if (efuseHex) {
+
+        setStatus(
+          "Hardware-ID gelesen — prüfe Lizenz …",
+          "ok"
+        );
+
+      } else if (mac) {
+
+        setStatus(
+          "MAC gelesen, Efuse-Format konnte nicht gebildet werden.",
+          "error"
+        );
+
+      } else {
+
+        setStatus(
+          "Chip erkannt, MAC konnte nicht gelesen werden.",
+          "error"
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // License check
+      //
+      // IMPORTANT:
+      // The license check happens BEFORE disconnecting
+      // from the ESP32, so the hardware information is
+      // immediately connected with the server request.
+      // ------------------------------------------------------
+
+      if (deviceId) {
+
+        await checkLicense(
+          deviceId,
+          description ||
+            chipName ||
+            "unknown"
+        );
+
+      } else {
+
+        setLicenseStatus(
+          "Keine Device ID",
+          "error"
+        );
+
+        licenseStatusTextEl.textContent =
+          "Aus der Hardware-ID konnte keine Device ID erzeugt werden.";
+
+        licenseStatusTextEl.className =
+          "hw-status error";
+      }
+
+
+      // ------------------------------------------------------
+      // Reset ESP32
+      // ------------------------------------------------------
+
+      try {
+
+        await esploader.after(
+          "hard_reset"
+        );
+
+      } catch (_) {}
+
+
+    } catch (err) {
+
+      console.error(err);
+
+
+      const msg =
+        err &&
+        err.message
+          ? err.message
+          : String(err);
+
+
+      let hint =
+        " Boot-Modus: BOOT halten → RESET → BOOT loslassen, dann erneut.";
+
+
+      if (
+        /timeout|Timed out|Failed to connect/i
+          .test(msg)
+      ) {
+
+        hint =
+          " Verbindung fehlgeschlagen — Boot-Modus + Daten-USB-Kabel prüfen.";
+
+      } else if (
+        /NetworkError|Failed to open/i
+          .test(msg)
+      ) {
+
+        hint =
+          " Port belegt? Serial Monitor / Install schließen.";
+      }
+
+
+      setStatus(
+        "Fehler: " +
+        msg +
+        hint,
+        "error"
+      );
+
+
+      setLicenseStatus(
+        "Nicht geprüft",
+        "pending"
+      );
+
+
+    } finally {
+
+      await safeDisconnect(
+        transport
+      );
+
+      btn.disabled =
+        false;
+    }
+  }
+
+
+  // ==========================================================
+  // EVENTS
+  // ==========================================================
+
+  btn.addEventListener(
+    "click",
+    () => {
+
+      readHardwareId();
+    }
+  );
+
+
+  copyBtn.addEventListener(
+    "click",
+    async () => {
+
+      if (!lastEfuse) {
+        return;
+      }
+
+
+      try {
+
+        await navigator.clipboard.writeText(
+          lastEfuse
+        );
+
+        setStatus(
+          "getEfuseMac() in Zwischenablage kopiert.",
+          "ok"
+        );
+
+      } catch (_) {
+
+        setStatus(
+          "Kopieren fehlgeschlagen – Wert manuell markieren.",
+          "error"
+        );
       }
     }
+  );
 
-    btn.addEventListener("click", () => {
-      readHardwareId();
-    });
+</script>
 
-    copyBtn.addEventListener("click", async () => {
-      if (!lastEfuse) return;
-      try {
-        await navigator.clipboard.writeText(lastEfuse);
-        setStatus("getEfuseMac() in Zwischenablage kopiert.", "ok");
-      } catch (_) {
-        setStatus("Kopieren fehlgeschlagen – Wert manuell markieren.", "error");
-      }
-    });
-  </script>
 </body>
 </html>
-
