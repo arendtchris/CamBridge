@@ -165,8 +165,29 @@
 
     esp-web-install-button {
       --esp-tools-button-color: #fff;
-      --esp-tools-button-background: var(--accent);
+      --esp-tools-button-background: var(--info);
       --esp-tools-button-border-radius: 8px;
+    }
+
+    /* Match .btn (Hardware-ID) look for the install activate button */
+    esp-web-install-button button[slot="activate"],
+    esp-web-install-button .btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #fff;
+      background: var(--info);
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+
+    esp-web-install-button button[slot="activate"]:hover,
+    esp-web-install-button .btn:hover {
+      background: var(--info-hover);
     }
 
     .btn {
@@ -575,7 +596,7 @@
 
         <esp-web-install-button manifest="./manifest.json">
 
-          <button slot="activate">
+          <button slot="activate" class="btn">
             Connect &amp; install
           </button>
 
@@ -680,7 +701,7 @@
           id="hwCopyBtn"
           disabled>
 
-          getEfuseMac kopieren
+          Device ID kopieren
 
         </button>
 
@@ -721,7 +742,7 @@
         <div class="row">
           <span class="label">getEfuseMac()</span>
           <span
-            class="value mac"
+            class="value"
             id="hwEfuse">
             —
           </span>
@@ -739,7 +760,7 @@
         <div class="row">
           <span class="label">Device ID</span>
           <span
-            class="value"
+            class="value mac"
             id="hwDeviceId">
             —
           </span>
@@ -2469,7 +2490,7 @@
 
 
         copyBtn.disabled =
-          !lastEfuse;
+          !lastDeviceId;
 
 
         /*
@@ -2747,7 +2768,7 @@
 
     /*
      * =========================================================
-     * COPY EFUSE
+     * COPY DEVICE ID
      * =========================================================
      */
 
@@ -2755,19 +2776,19 @@
       "click",
       async () =>
       {
-        if (!lastEfuse)
+        if (!lastDeviceId)
           return;
 
 
         try
         {
           await navigator.clipboard.writeText(
-            lastEfuse
+            lastDeviceId
           );
 
 
           setStatus(
-            "getEfuseMac() in Zwischenablage kopiert.",
+            "Device ID in Zwischenablage kopiert.",
             "ok"
           );
         }
