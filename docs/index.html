@@ -476,6 +476,38 @@
       color: var(--error);
     }
 
+    .serial-header {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .serial-header h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .serial-chevron {
+      display: inline-block;
+      width: 0.65rem;
+      transition: transform 0.15s ease;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1;
+    }
+
+    .serial-card.collapsed .serial-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .serial-card.collapsed .serial-body {
+      display: none;
+    }
+
+    .serial-card:not(.collapsed) .serial-body {
+      display: block;
+    }
+
     .license-box {
       margin-top: 1rem;
 
@@ -887,37 +919,25 @@
       </div>
 
 
-      <div
-        class="license-send"
-        id="licenseSendBox"
-        style="display:none">
-
-        <div>
-          Gesendeter Befehl:
-        </div>
-
-        <div
-          id="licenseSendCommand"
-          style="margin-top:0.35rem">
-
-          —
-
-        </div>
-
-      </div>
-
     </div>
 
 
     <!-- ===================================================== -->
-    <!-- SERIAL MONITOR -->
+    <!-- SERIAL MONITOR (collapsible) -->
     <!-- ===================================================== -->
 
-    <div class="card">
+    <div class="card serial-card collapsed" id="serialCard">
 
-      <div class="serial-header">
+      <div
+        class="serial-header"
+        id="serialToggle"
+        role="button"
+        tabindex="0"
+        aria-expanded="false"
+        aria-controls="serialBody">
 
         <h2 style="margin:0">
+          <span class="serial-chevron" aria-hidden="true">▼</span>
           ESP32 Serial Monitor
         </h2>
 
@@ -931,42 +951,43 @@
 
       </div>
 
+      <div class="serial-body" id="serialBody">
 
-      <p class="hint">
+        <p class="hint">
 
-        Der Serial Monitor wird nach dem
-        Auslesen der Hardware-ID automatisch
-        mit 115200 Baud geöffnet.
+          Der Serial Monitor wird nach dem
+          Auslesen der Hardware-ID automatisch
+          mit 115200 Baud geöffnet.
 
-      </p>
+        </p>
 
+        <div
+          class="serial-monitor"
+          id="serialOutput"
+          aria-live="polite">
+        </div>
 
-      <div
-        class="serial-monitor"
-        id="serialOutput"
-        aria-live="polite">
-      </div>
+        <div class="actions">
 
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="serialClearBtn">
 
-      <div class="actions">
+            Clear
 
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="serialClearBtn">
+          </button>
 
-          Clear
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="serialCloseBtn">
 
-        </button>
+            Serial schließen
 
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="serialCloseBtn">
+          </button>
 
-          Serial schließen
-
-        </button>
+        </div>
 
       </div>
 
@@ -1011,47 +1032,6 @@
 
     </div>
 
-
-    <!-- ===================================================== -->
-    <!-- FIRMWARE -->
-    <!-- ===================================================== -->
-
-    <div class="card">
-
-      <h2>Firmware-Binaries</h2>
-
-      <p
-        class="hint"
-        style="margin:0">
-
-        Erwartet Dateien unter
-        <code>firmware/esp32c3/</code>.
-
-        Siehe
-        <code>firmware/HOW_TO_ADD_BINS.md</code>
-        im Repo.
-
-      </p>
-
-    </div>
-
-
-    <!-- ===================================================== -->
-    <!-- FOOTER -->
-    <!-- ===================================================== -->
-
-    <footer>
-
-      Not affiliated with GoPro ·
-
-      <a
-        href="https://github.com/arendtchris/CamBridge">
-
-        Repository
-
-      </a>
-
-    </footer>
 
   </div>
 
@@ -1168,16 +1148,6 @@
         "hwLicenseHash"
       );
 
-    const licenseSendBox =
-      document.getElementById(
-        "licenseSendBox"
-      );
-
-    const licenseSendCommand =
-      document.getElementById(
-        "licenseSendCommand"
-      );
-
     const serialOutputEl =
       document.getElementById(
         "serialOutput"
@@ -1197,6 +1167,52 @@
       document.getElementById(
         "serialCloseBtn"
       );
+
+    const serialCard =
+      document.getElementById(
+        "serialCard"
+      );
+
+    const serialToggle =
+      document.getElementById(
+        "serialToggle"
+      );
+
+    function setSerialExpanded(open)
+    {
+      if (!serialCard || !serialToggle)
+        return;
+
+      if (open)
+      {
+        serialCard.classList.remove(
+          "collapsed"
+        );
+        serialToggle.setAttribute(
+          "aria-expanded",
+          "true"
+        );
+      }
+      else
+      {
+        serialCard.classList.add(
+          "collapsed"
+        );
+        serialToggle.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    }
+
+    function toggleSerialPanel()
+    {
+      const open =
+        serialCard.classList.contains(
+          "collapsed"
+        );
+      setSerialExpanded(open);
+    }
 
 
     /*
@@ -1236,6 +1252,9 @@
 
       serialOutputEl.scrollTop =
         serialOutputEl.scrollHeight;
+
+      // Auto-expand when there is output
+      setSerialExpanded(true);
     }
 
 
@@ -1623,26 +1642,6 @@
         "connected"
       );
 
-      serialLog(
-        "\n----------------------------------------\n"
-      );
-
-      serialLog(
-        "USB Serial verbunden\n"
-      );
-
-      serialLog(
-        "Baudrate: 115200\n"
-      );
-
-      serialLog(
-        "Warte auf ESP-Ausgabe …\n"
-      );
-
-      serialLog(
-        "----------------------------------------\n"
-      );
-
       serialKeepReading = true;
 
       // fire-and-forget reader
@@ -1807,19 +1806,7 @@
       const command =
         JSON.stringify(payload) +
         "\n";
-
-      licenseSendBox.style.display =
-        "block";
-
-      licenseSendCommand.textContent =
-        command.trim();
-
-      serialLog(
-        "\n> " +
-        command
-      );
-
-      await sendSerial(
+await sendSerial(
         command
       );
     }
@@ -1847,38 +1834,13 @@
 
       licenseHashEl.textContent =
         "—";
-
-      licenseSendBox.style.display =
-        "none";
-
-
+// Compact web-side license header (then only ESP serial follows)
       serialLog(
-        "\n----------------------------------------\n"
-      );
-
-      serialLog(
-        "License Server\n"
-      );
-
-      serialLog(
-        "Device ID: " +
-        deviceId +
-        "\n"
-      );
-
-      serialLog(
-        "Hardware: " +
-        hardware +
-        "\n"
-      );
-
-      serialLog(
-        "Firmware: " +
-        FIRMWARE_VERSION +
-        "\n"
-      );
-
-      serialLog(
+        "----------------------------------------\n" +
+        "License Server\n" +
+        "Device ID: " + deviceId + "\n" +
+        "Hardware: " + hardware + "\n" +
+        "Firmware: " + FIRMWARE_VERSION + "\n" +
         "----------------------------------------\n"
       );
 
@@ -1928,20 +1890,6 @@
           await response.json();
 
 
-        serialLog(
-          "Server Response:\n"
-        );
-
-        serialLog(
-          JSON.stringify(
-            data,
-            null,
-            2
-          ) +
-          "\n"
-        );
-
-
         requestIdEl.textContent =
           data.request_id ||
           "—";
@@ -1962,10 +1910,6 @@
 
           licenseEl.className =
             "value license-inactive";
-
-          serialLog(
-            "\nLICENSE: NOT LICENSED\n"
-          );
 
           return null;
         }
@@ -1996,26 +1940,6 @@
           data.hash;
 
 
-        serialLog(
-          "\nLICENSE: SERVER APPROVED\n"
-        );
-
-        serialLog(
-          "Request ID: " +
-          (
-            data.request_id ||
-            "—"
-          ) +
-          "\n"
-        );
-
-        serialLog(
-          "Server Hash: " +
-          data.hash +
-          "\n"
-        );
-
-
         return data;
       }
       catch (error)
@@ -2029,13 +1953,6 @@
 
         licenseEl.className =
           "value license-inactive";
-
-
-        serialLog(
-          "\nLicense Server Fehler: " +
-          error.message +
-          "\n"
-        );
 
 
         throw error;
@@ -2154,6 +2071,9 @@
         "Port wählen …"
       );
 
+      // Fresh terminal for this run
+      serialOutputEl.textContent = "";
+
 
       /*
        * Reset license UI
@@ -2170,12 +2090,7 @@
 
       licenseHashEl.textContent =
         "—";
-
-      licenseSendBox.style.display =
-        "none";
-
-
-      let transport =
+let transport =
         null;
 
 
@@ -2640,11 +2555,6 @@
               "ok"
             );
 
-
-            serialLog(
-              "\nLizenz-JSON wurde an den ESP32 gesendet.\n"
-            );
-
           }
           catch (error)
           {
@@ -2656,19 +2566,7 @@
               "Lizenz konnte nicht über Serial gesendet werden.",
               "error"
             );
-
-            serialLog(
-              "\nFehler beim Senden der Lizenz: " +
-              error.message +
-              "\n"
-            );
           }
-        }
-        else
-        {
-          serialLog(
-            "\nKeine gültige Lizenz vorhanden — kein Hash gesendet.\n"
-          );
         }
 
 
@@ -2809,6 +2707,29 @@
      * =========================================================
      */
 
+    serialToggle.addEventListener(
+      "click",
+      () =>
+      {
+        toggleSerialPanel();
+      }
+    );
+
+    serialToggle.addEventListener(
+      "keydown",
+      (event) =>
+      {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        )
+        {
+          event.preventDefault();
+          toggleSerialPanel();
+        }
+      }
+    );
+
     serialClearBtn.addEventListener(
       "click",
       () =>
@@ -2871,13 +2792,7 @@
       FIRMWARE_VERSION;
 
 
-    serialLog(
-      "CamBridge Serial Monitor\n"
-    );
-
-    serialLog(
-      "Warte auf ESP32 …\n"
-    );
+    serialOutputEl.textContent = "";
 
   </script>
 
