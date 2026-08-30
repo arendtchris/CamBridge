@@ -1369,16 +1369,11 @@
      * DEVICE ID
      * =========================================================
      *
+     * Format:
+     *   CAMBRIDGE-ESP32-<ESP.getEfuseMac()>
+     *
      * Example:
-     *
-     * ESP32-C3 (revision 4)
-     * +
-     * 0x7850D0AD4F7C
-     *
-     * becomes:
-     *
-     * CB-ESP32-C3(REVISION4)-7850D0AD4F7C
-     *
+     *   CAMBRIDGE-ESP32-0x7850D0AD4F7C
      */
 
     function createDeviceId(
@@ -1386,41 +1381,27 @@
       efuseHex
     )
     {
-      if (
-        !description ||
-        !efuseHex
-      )
+      if (!efuseHex)
       {
         return "";
       }
 
-      let chip =
-        String(
-          description
-        )
-        .trim()
-        .replace(
-          /\s+/g,
-          ""
-        )
-        .toUpperCase();
-
       let mac =
-        String(
-          efuseHex
-        )
-        .replace(
-          /^0x/i,
-          ""
-        )
-        .toUpperCase();
+        String(efuseHex)
+          .trim()
+          .toUpperCase();
 
-      return (
-        "CB-" +
-        chip +
-        "-" +
-        mac
-      );
+      // ensure 0x prefix (Arduino-style hex)
+      if (!mac.startsWith("0X"))
+      {
+        mac = "0x" + mac.replace(/^0X/i, "");
+      }
+      else
+      {
+        mac = "0x" + mac.slice(2);
+      }
+
+      return "CAMBRIDGE-ESP32-" + mac;
     }
 
 
@@ -1779,20 +1760,31 @@
      * =========================================================
      */
 
-    async function sendLicenseHash(
-      hash
+    async function sendLicensePayload(
+      license,
+      deviceId,
+      hardware
     )
     {
-      if (!hash)
+      if (!license || !license.licensed)
       {
         throw new Error(
-          "Kein Server-Hash vorhanden."
+          "Keine gültige Lizenz-Payload."
         );
       }
 
+      // Full JSON payload for the ESP (one line + newline)
+      const payload = {
+        licensed: !!license.licensed,
+        hash: license.hash || null,
+        request_id: license.request_id || null,
+        id: deviceId || null,
+        firmware: FIRMWARE_VERSION,
+        hardware: hardware || null
+      };
+
       const command =
-        "LICENSE:" +
-        hash +
+        JSON.stringify(payload) +
         "\n";
 
       licenseSendBox.style.display =
@@ -2605,30 +2597,31 @@
 
         if (
           license &&
-          license.licensed &&
-          license.hash
+          license.licensed
         )
         {
           setStatus(
-            "Lizenz bestätigt — sende Hash an ESP …"
+            "Lizenz bestätigt — sende JSON an ESP …"
           );
 
 
           try
           {
-            await sendLicenseHash(
-              license.hash
+            await sendLicensePayload(
+              license,
+              deviceId,
+              description
             );
 
 
             setStatus(
-              "Lizenz-Hash an ESP gesendet.",
+              "Lizenz-JSON an ESP gesendet.",
               "ok"
             );
 
 
             serialLog(
-              "\nLizenz-Hash wurde an den ESP32 gesendet.\n"
+              "\nLizenz-JSON wurde an den ESP32 gesendet.\n"
             );
 
           }
