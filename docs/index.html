@@ -1682,6 +1682,7 @@
     let lastDeviceId =
       "";
 
+
     let serialPort =
       null;
 
@@ -3427,6 +3428,224 @@ let transport =
       }
     }
 
+
+    /**
+     * After flash, port is free again → read MAC via esptool and set lastDeviceId.
+     */
+    async function readDeviceIdForFlash()
+    {
+      let port =
+        null;
+
+      let transport =
+        null;
+
+      try
+      {
+        // Prefer previously granted port if still available
+        const ports =
+          await navigator.serial.getPorts();
+
+        if (
+          ports &&
+          ports.length > 0
+        )
+        {
+          port =
+            ports[0];
+        }
+        else
+        {
+          port =
+            await navigator.serial.requestPort(
+              {}
+            );
+        }
+
+        await port.open(
+          {
+            baudRate:
+              115200,
+            bufferSize:
+              8192
+          }
+        )
+          .catch(
+            () =>
+            {
+              // may already be open / just released
+            }
+          );
+
+        // Ensure we have a usable port for Transport
+        transport =
+          new Transport(
+            port,
+            true
+          );
+
+        const esploader =
+          new ESPLoader(
+            {
+              transport,
+              baudrate:
+                115200,
+              terminal:
+              {
+                clean() {},
+                writeLine() {},
+                write() {}
+              },
+              debugLogging:
+                false
+            }
+          );
+
+        const chipName =
+          await esploader.main(
+            "default_reset"
+          );
+
+        let mac =
+          "";
+
+        try
+        {
+          if (
+            esploader.chip &&
+            typeof esploader.chip.readMac ===
+              "function"
+          )
+          {
+            mac =
+              await esploader.chip.readMac(
+                esploader
+              );
+          }
+        }
+        catch (_) {}
+
+        if (
+          !mac &&
+          typeof esploader.readMac ===
+            "function"
+        )
+        {
+          try
+          {
+            mac =
+              await esploader.readMac();
+          }
+          catch (_) {}
+        }
+
+        const macStr =
+          mac
+            ? String(
+                mac
+              )
+            : "";
+
+        const efuseHex =
+          macToEfuseMac(
+            macStr
+          );
+
+        const deviceId =
+          createDeviceId(
+            chipName,
+            efuseHex
+          );
+
+        if (deviceId)
+        {
+          lastDeviceId =
+            deviceId;
+        }
+
+        if (macStr)
+        {
+          lastMac =
+            macStr;
+        }
+
+        if (efuseHex)
+        {
+          lastEfuse =
+            efuseHex;
+        }
+
+        try
+        {
+          await esploader.hardReset();
+        }
+        catch (_) {}
+
+        await safeDisconnect(
+          transport
+        );
+
+        try
+        {
+          if (
+            port &&
+            port.close
+          )
+          {
+            await port.close();
+          }
+        }
+        catch (_) {}
+
+        return {
+          deviceId:
+            deviceId ||
+            null,
+
+          chipName:
+            chipName
+              ? String(
+                  chipName
+                )
+              : null,
+
+          mac:
+            macStr ||
+            null
+        };
+      }
+      catch (err)
+      {
+        console.warn(
+          "Post-flash device ID read failed:",
+          err
+        );
+
+        try
+        {
+          await safeDisconnect(
+            transport
+          );
+        }
+        catch (_) {}
+
+        try
+        {
+          if (
+            port &&
+            port.close
+          )
+          {
+            await port.close();
+          }
+        }
+        catch (_) {}
+
+        return null;
+      }
+    }
+
+
     function handleFlashState(state)
     {
       if (
@@ -3467,18 +3686,7 @@ let transport =
           t("flash_init")
         );
 
-        if (
-          !flashDbReported.started
-        )
-        {
-          flashDbReported.started =
-            true;
-
-          reportFlashToDatabase(
-            "started",
-            state
-          );
-        }
+        // DB: only log finished (and errors), not started
       }
       else if (
         s === "preparing"
@@ -3563,10 +3771,50 @@ let transport =
           flashDbReported.finished =
             true;
 
-          reportFlashToDatabase(
-            "finished",
-            state
-          );
+          // Read hardware ID now (port free after flash), then log with device_id
+          (async () =>
+          {
+            let chipFamily =
+              (
+                state &&
+                state.chipFamily
+              ) ||
+              null;
+
+            if (!lastDeviceId)
+            {
+              logFlashLine(
+                "Reading device ID…"
+              );
+
+              const info =
+                await readDeviceIdForFlash();
+
+              if (
+                info &&
+                info.deviceId
+              )
+              {
+                logFlashLine(
+                  "Device ID: " +
+                  info.deviceId
+                );
+
+                chipFamily =
+                  chipFamily ||
+                  info.chipName;
+              }
+            }
+
+            await reportFlashToDatabase(
+              "finished",
+              {
+                ...state,
+                chipFamily:
+                  chipFamily
+              }
+            );
+          })();
         }
 
         flashLogStarted =
@@ -3575,6 +3823,7 @@ let transport =
         lastFlashPercent =
           -1;
       }
+
       else if (
         s === "error"
       )
