@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="ui-sans-serif, system-ui, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrB" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrGy" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8b949e"/>
+    </marker>
+    <filter id="sh" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="620" fill="#0d1117"/>
+
+  <text x="480" y="32" text-anchor="middle" fill="#e6edf3" font-size="20" font-weight="700">
+    CamBridge Wiring – ESP32-C3 Super Mini ↔ Flight Controller
+  </text>
+  <text x="480" y="54" text-anchor="middle" fill="#8b949e" font-size="12">
+    MSP @ 115200 · TX/RX crossed · common GND
+  </text>
+
+  <!-- ===== ESP board (simplified top view) ===== -->
+  <g filter="url(#sh)">
+    <rect x="48" y="90" width="320" height="400" rx="16" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  </g>
+
+  <!-- mini board body -->
+  <rect x="130" y="160" width="160" height="220" rx="10" fill="#1a1a1a" stroke="#c9a227" stroke-width="2"/>
+  <circle cx="210" cy="250" r="28" fill="none" stroke="#e6edf3" stroke-width="2.5"/>
+  <circle cx="210" cy="250" r="10" fill="#e6edf3"/>
+  <text x="210" y="310" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="700">ESP32-C3</text>
+  <text x="210" y="326" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="700">Super Mini</text>
+
+  <text x="208" y="120" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">ESP32-C3 Super Mini</text>
+  <text x="208" y="140" text-anchor="middle" fill="#8b949e" font-size="11">CamBridge / GoPro Bridge BLE</text>
+
+  <!-- Left power pins labels -->
+  <text x="120" y="185" text-anchor="end" fill="#f85149" font-size="11" font-weight="700">5V</text>
+  <circle cx="130" cy="181" r="5" fill="#da3633"/>
+  <text x="120" y="208" text-anchor="end" fill="#c9d1d9" font-size="11" font-weight="700">GND</text>
+  <circle cx="130" cy="204" r="5" fill="#6e7681"/>
+  <text x="120" y="231" text-anchor="end" fill="#f85149" font-size="11" font-weight="700">3V3</text>
+  <circle cx="130" cy="227" r="5" fill="#da3633"/>
+
+  <!-- Right UART pins (highlighted) -->
+  <!-- GPIO20 RX - pad on right of board ~ lower -->
+  <circle cx="290" cy="330" r="8" fill="#238636" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="305" y="326" fill="#3fb950" font-size="13" font-weight="700">GPIO20</text>
+  <text x="305" y="342" fill="#8b949e" font-size="11">RX · Pin 20</text>
+
+  <circle cx="290" cy="375" r="8" fill="#1f6feb" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="305" y="371" fill="#58a6ff" font-size="13" font-weight="700">GPIO21</text>
+  <text x="305" y="387" fill="#8b949e" font-size="11">TX · Pin 21</text>
+
+  <!-- GND highlight for wire -->
+  <circle cx="130" cy="430" r="8" fill="#6e7681" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="145" y="426" fill="#c9d1d9" font-size="13" font-weight="700">GND</text>
+  <text x="145" y="442" fill="#8b949e" font-size="11">common ground</text>
+
+  <circle cx="130" cy="475" r="7" fill="#da3633"/>
+  <text x="145" y="471" fill="#c9d1d9" font-size="12" font-weight="600">5V</text>
+  <text x="145" y="487" fill="#8b949e" font-size="10">optional power from FC</text>
+
+  <!-- ===== FC box ===== -->
+  <g filter="url(#sh)">
+    <rect x="592" y="90" width="320" height="400" rx="16" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  </g>
+  <text x="752" y="120" text-anchor="middle" fill="#3fb950" font-size="15" font-weight="700">Flight Controller</text>
+  <text x="752" y="140" text-anchor="middle" fill="#8b949e" font-size="11">Betaflight · free UART (e.g. UART2)</text>
+
+  <circle cx="620" cy="330" r="8" fill="#1f6feb" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="640" y="326" fill="#c9d1d9" font-size="13" font-weight="700">RX</text>
+  <text x="640" y="342" fill="#8b949e" font-size="11">MSP in</text>
+
+  <circle cx="620" cy="375" r="8" fill="#238636" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="640" y="371" fill="#c9d1d9" font-size="13" font-weight="700">TX</text>
+  <text x="640" y="387" fill="#8b949e" font-size="11">MSP out</text>
+
+  <circle cx="620" cy="430" r="8" fill="#6e7681" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="640" y="426" fill="#c9d1d9" font-size="13" font-weight="700">GND</text>
+  <text x="640" y="442" fill="#8b949e" font-size="11">ground</text>
+
+  <circle cx="620" cy="475" r="7" fill="#da3633"/>
+  <text x="640" y="471" fill="#c9d1d9" font-size="12" font-weight="600">5V</text>
+  <text x="640" y="487" fill="#8b949e" font-size="10">optional → ESP 5V</text>
+
+  <!-- ===== wires (crossed UART) ===== -->
+  <!-- ESP TX GPIO21 → FC RX -->
+  <path d="M298,375 C430,375 500,330 612,330" fill="none" stroke="#58a6ff" stroke-width="3.5" marker-end="url(#arrB)"/>
+  <text x="470" y="340" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">GPIO21 TX  →  FC RX</text>
+
+  <!-- ESP RX GPIO20 ← FC TX -->
+  <path d="M298,330 C430,330 500,375 612,375" fill="none" stroke="#3fb950" stroke-width="3.5" marker-end="url(#arrG)"/>
+  <text x="470" y="400" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="700">GPIO20 RX  ←  FC TX</text>
+
+  <!-- GND -->
+  <path d="M138,430 C400,430 480,430 612,430" fill="none" stroke="#8b949e" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#arrGy)"/>
+  <text x="470" y="420" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="600">GND — GND</text>
+
+  <!-- 5V optional -->
+  <path d="M138,475 C400,475 480,475 612,475" fill="none" stroke="#da3633" stroke-width="2" stroke-dasharray="4 4" opacity="0.9"/>
+  <text x="470" y="495" text-anchor="middle" fill="#f85149" font-size="10">5V optional (power ESP from FC)</text>
+
+  <!-- ===== table / legend ===== -->
+  <rect x="48" y="510" width="864" height="92" rx="12" fill="#161b22" stroke="#30363d"/>
+
+  <text x="68" y="538" fill="#e6edf3" font-size="13" font-weight="700">Connection table</text>
+  <text x="68" y="560" fill="#8b949e" font-size="12">ESP GPIO21 (TX) → FC RX</text>
+  <text x="68" y="578" fill="#8b949e" font-size="12">ESP GPIO20 (RX) ← FC TX</text>
+  <text x="68" y="596" fill="#8b949e" font-size="12">ESP GND — FC GND · 5V optional</text>
+
+  <text x="360" y="538" fill="#e6edf3" font-size="13" font-weight="700">Betaflight</text>
+  <text x="360" y="560" fill="#8b949e" font-size="12">Ports tab → choose UART → set MSP</text>
+  <text x="360" y="578" fill="#8b949e" font-size="12">Baudrate 115200</text>
+  <text x="360" y="596" fill="#8b949e" font-size="12">OSD: enable Custom Message 1–4</text>
+
+  <text x="640" y="538" fill="#e6edf3" font-size="13" font-weight="700">Notes</text>
+  <text x="640" y="560" fill="#8b949e" font-size="12">Always cross TX/RX</text>
+  <text x="640" y="578" fill="#8b949e" font-size="12">Shared GND required</text>
+  <text x="640" y="596" fill="#8b949e" font-size="12">USB-C = flash / license only</text>
+</svg>

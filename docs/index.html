@@ -270,6 +270,50 @@
       border-radius: 4px;
     }
 
+
+    .wiring-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .wiring-table th,
+    .wiring-table td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+    }
+
+    .wiring-table th {
+      background: #0d1117;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .wiring-table td {
+      color: var(--text);
+    }
+
+    .wiring-table tr:nth-child(even) td {
+      background: rgba(13, 17, 23, 0.45);
+    }
+
+    .wiring-table .dir {
+      text-align: center;
+      color: var(--info);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .wiring-table code {
+      font-size: 0.9em;
+    }
+
+
     footer {
       margin-top: 2rem;
 
@@ -415,6 +459,47 @@
 
       margin-top: 1rem;
     }
+
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .lang-switch button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.25rem 0.65rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .lang-switch button.active {
+      background: var(--info);
+      color: #fff;
+    }
+
+    .lang-switch button:not(.active):hover {
+      color: var(--text);
+      background: #21262d;
+    }
+
 
     .serial-monitor {
       background: #0d1117;
@@ -583,11 +668,17 @@
 
   <div class="wrap">
 
-    <span class="tag">ESP32-C3</span>
+    <div class="top-bar">
+      <span class="tag">ESP32-C3</span>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" id="langDe" data-lang="de" class="active">DE</button>
+        <button type="button" id="langEn" data-lang="en">EN</button>
+      </div>
+    </div>
 
     <h1>GoPro Bridge BLE</h1>
 
-    <p class="lead">
+    <p class="lead" data-i18n="lead">
       Firmware aus dem Browser flashen (Chrome / Edge).
       GoPro-Status ins Betaflight-OSD über MSP.
     </p>
@@ -599,43 +690,28 @@
 
     <div class="card">
 
-      <h2>Install</h2>
+      <h2 data-i18n="install_title">Install</h2>
 
       <ol>
-
-        <li>
-          Daten-USB-Kabel verwenden,
-          Serial Monitor / andere Tools am Port schließen.
-        </li>
-
-        <li>
-          ESP32 direkt am PC anschließen
-          (nicht nur über den Flight Controller).
-        </li>
-
-        <li>
-          <strong>Connect</strong> klicken,
-          Port wählen, Dialog folgen.
-        </li>
-
-        <li>
-          Erster Flash kann Bonds und NVS-Einstellungen löschen.
-        </li>
-
+        <li data-i18n="install_li1">Daten-USB-Kabel verwenden, Serial Monitor / andere Tools am Port schließen.</li>
+        <li data-i18n="install_li2">ESP32 direkt am PC anschließen (nicht nur über den Flight Controller).</li>
+        <li data-i18n-html="install_li3"><strong>Connect</strong> klicken, Port wählen, Dialog folgen.</li>
+        <li data-i18n="install_li4">Erster Flash kann Bonds und NVS-Einstellungen löschen.</li>
       </ol>
 
       <div class="install">
 
-        <esp-web-install-button manifest="./manifest.json">
+        <esp-web-install-button id="espInstallBtn" manifest="./manifest.json">
 
-          <button slot="activate" class="btn">
+          <button slot="activate" class="btn" data-i18n="install_btn">
             Connect &amp; install
           </button>
 
           <span
             slot="unsupported"
             class="unsupported"
-            style="display:block">
+            style="display:block"
+            data-i18n="install_unsupported">
 
             Web Serial ist in diesem Browser nicht verfügbar.
             Desktop Chrome oder Edge über HTTPS nutzen.
@@ -645,7 +721,8 @@
           <span
             slot="not-allowed"
             class="unsupported"
-            style="display:block">
+            style="display:block"
+            data-i18n="install_not_allowed">
 
             Keine Berechtigung –
             Seite muss über HTTPS oder localhost laufen.
@@ -656,16 +733,12 @@
 
       </div>
 
-      <p class="hint">
+      <p class="hint" data-i18n-html="install_boot_hint">
 
         Boot-Modus nötig?
-
         <code>BOOT</code> halten,
-
         <code>RESET</code> drücken,
-
         <code>BOOT</code> loslassen,
-
         dann erneut Connect.
 
       </p>
@@ -679,38 +752,32 @@
 
     <div class="card">
 
-      <h2>Hardware-Nummer auslesen</h2>
+      <h2 data-i18n="hw_title">Hardware-Nummer auslesen</h2>
 
       <p
         class="hint"
-        style="margin:0 0 0.75rem">
+        style="margin:0 0 0.75rem"
+        data-i18n="hw_hint">
 
         Liest Chip-Typ und MAC-Adresse
         (eindeutige Hardware-ID)
         über den ROM-Bootloader.
-
         Gerät wird kurz zurückgesetzt.
 
       </p>
 
       <ol>
 
-        <li>
-          Gleiches Daten-USB-Kabel,
-          Port freigeben
-          (kein Install/Serial Monitor parallel).
+        <li data-i18n="hw_li1">
+          Gleiches Daten-USB-Kabel, Port freigeben (kein Install/Serial Monitor parallel).
         </li>
 
-        <li>
-          Bei Bedarf Boot-Modus:
-          <code>BOOT</code> halten →
-          <code>RESET</code> →
-          <code>BOOT</code> loslassen.
+        <li data-i18n-html="hw_li2">
+          Bei Bedarf Boot-Modus: <code>BOOT</code> halten → <code>RESET</code> → <code>BOOT</code> loslassen.
         </li>
 
-        <li>
-          <strong>Hardware-ID lesen</strong>
-          klicken und den ESP-Port wählen.
+        <li data-i18n-html="hw_li3">
+          <strong>Hardware-ID lesen</strong> klicken und den ESP-Port wählen.
         </li>
 
       </ol>
@@ -721,7 +788,8 @@
         <button
           type="button"
           class="btn"
-          id="hwReadBtn">
+          id="hwReadBtn"
+          data-i18n="hw_read_btn">
 
           Hardware-ID lesen
 
@@ -731,7 +799,8 @@
           type="button"
           class="btn btn-secondary"
           id="hwCopyBtn"
-          disabled>
+          disabled
+          data-i18n="hw_copy_btn">
 
           Device ID kopieren
 
@@ -754,7 +823,7 @@
         aria-live="polite">
 
         <div class="row">
-          <span class="label">Chip</span>
+          <span class="label" data-i18n="label_chip">Chip</span>
           <span
             class="value"
             id="hwChip">
@@ -763,7 +832,7 @@
         </div>
 
         <div class="row">
-          <span class="label">MAC</span>
+          <span class="label" data-i18n="label_mac">MAC</span>
           <span
             class="value"
             id="hwMac">
@@ -772,7 +841,7 @@
         </div>
 
         <div class="row">
-          <span class="label">getEfuseMac()</span>
+          <span class="label" data-i18n="label_efuse">getEfuseMac()</span>
           <span
             class="value"
             id="hwEfuse">
@@ -781,7 +850,7 @@
         </div>
 
         <div class="row">
-          <span class="label">Features</span>
+          <span class="label" data-i18n="label_features">Features</span>
           <span
             class="value"
             id="hwFeatures">
@@ -790,7 +859,7 @@
         </div>
 
         <div class="row">
-          <span class="label">Device ID</span>
+          <span class="label" data-i18n="label_device_id">Device ID</span>
           <span
             class="value mac"
             id="hwDeviceId">
@@ -799,7 +868,7 @@
         </div>
 
         <div class="row">
-          <span class="label">Firmware</span>
+          <span class="label" data-i18n="label_firmware">Firmware</span>
           <span
             class="value"
             id="hwFirmware">
@@ -817,7 +886,8 @@
           display:none;
           margin-top:0.75rem;
           color:#f0a0a0;
-        ">
+        "
+        data-i18n="hw_unsupported">
 
         Web Serial nicht verfügbar.
         Desktop Chrome / Edge über HTTPS
@@ -834,13 +904,12 @@
 
     <div class="card">
 
-      <h2>CamBridge Lizenz</h2>
+      <h2 data-i18n="lic_title">CamBridge Lizenz</h2>
 
-      <p class="hint">
+      <p class="hint" data-i18n="lic_hint">
 
         Die Hardware-ID wird an den CamBridge
         Lizenzserver übertragen.
-
         Bei einer gültigen Lizenz wird der
         Server-Hash anschließend direkt
         über USB Serial an den ESP32 gesendet.
@@ -852,7 +921,7 @@
 
         <div class="row">
 
-          <span class="label">
+          <span class="label" data-i18n="lic_status_label">
             Lizenzstatus
           </span>
 
@@ -869,7 +938,7 @@
 
         <div class="row">
 
-          <span class="label">
+          <span class="label" data-i18n="lic_request_label">
             Request ID
           </span>
 
@@ -886,7 +955,7 @@
 
         <div class="row">
 
-          <span class="label">
+          <span class="label" data-i18n="lic_hash_label">
             Server Hash
           </span>
 
@@ -903,7 +972,7 @@
 
         <div class="row">
 
-          <span class="label">
+          <span class="label" data-i18n="lic_server_label">
             Server
           </span>
 
@@ -938,12 +1007,13 @@
 
         <h2 style="margin:0">
           <span class="serial-chevron" aria-hidden="true">▼</span>
-          ESP32 Serial Monitor
+          <span data-i18n="serial_title">ESP32 Serial Monitor</span>
         </h2>
 
         <span
           class="serial-status"
-          id="serialStatus">
+          id="serialStatus"
+          data-i18n="serial_disconnected">
 
           Nicht verbunden
 
@@ -953,7 +1023,7 @@
 
       <div class="serial-body" id="serialBody">
 
-        <p class="hint">
+        <p class="hint" data-i18n="serial_hint">
 
           Der Serial Monitor wird nach dem
           Auslesen der Hardware-ID automatisch
@@ -972,7 +1042,8 @@
           <button
             type="button"
             class="btn btn-secondary"
-            id="serialClearBtn">
+            id="serialClearBtn"
+            data-i18n="serial_clear">
 
             Clear
 
@@ -981,7 +1052,8 @@
           <button
             type="button"
             class="btn btn-secondary"
-            id="serialCloseBtn">
+            id="serialCloseBtn"
+            data-i18n="serial_close">
 
             Serial schließen
 
@@ -1000,35 +1072,66 @@
 
     <div class="card">
 
-      <h2>Nach dem Flashen</h2>
+      <h2 data-i18n="after_title">Nach dem Flashen</h2>
 
       <ul>
-
-        <li>
-          Wi-Fi SoftAP:
-          SSID <code>GoProBridge</code>
-          · Passwort <code>gopro1234</code>
-        </li>
-
-        <li>
-          Portal:
-          <code>http://192.168.4.1</code>
-        </li>
-
-        <li>
-          FC UART:
-          MSP @ 115200,
-          TX/RX gekreuzt,
-          gemeinsames GND
-        </li>
-
-        <li>
-          OSD:
-          Custom Message 1–4
-          in Betaflight aktivieren
-        </li>
-
+        <li data-i18n-html="after_li1">Wi-Fi SoftAP: SSID <code>GoProBridge</code> · Passwort <code>gopro1234</code></li>
+        <li data-i18n-html="after_li2">Portal: <code>http://192.168.4.1</code></li>
+        <li data-i18n="after_li3">FC UART: MSP @ 115200, TX/RX gekreuzt, gemeinsames GND</li>
+        <li data-i18n="after_li4">OSD: Custom Message 1–4 in Betaflight aktivieren</li>
       </ul>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- WIRING -->
+    <!-- ===================================================== -->
+
+    <div class="card">
+
+      <h2 data-i18n="wiring_title">Verdrahtung</h2>
+
+      <p class="hint" data-i18n="wiring_hint" style="margin:0 0 0.5rem">
+        ESP32-C3 Super Mini ↔ Flight Controller (MSP @ 115200).
+        TX/RX kreuzen, GND gemeinsam.
+      </p>
+
+      <table class="wiring-table">
+        <thead>
+          <tr>
+            <th data-i18n="wiring_col_esp">Super Mini</th>
+            <th data-i18n="wiring_col_dir">Richtung</th>
+            <th data-i18n="wiring_col_fc">Flight Controller</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GPIO21 (TX)</code></td>
+            <td class="dir">→</td>
+            <td data-i18n="wiring_row_rx">RX (UART)</td>
+          </tr>
+          <tr>
+            <td><code>GPIO20 (RX)</code></td>
+            <td class="dir">←</td>
+            <td data-i18n="wiring_row_tx">TX (UART)</td>
+          </tr>
+          <tr>
+            <td><code>GND</code></td>
+            <td class="dir">—</td>
+            <td><code>GND</code></td>
+          </tr>
+          <tr>
+            <td><code>5V</code></td>
+            <td class="dir" data-i18n="wiring_opt">optional</td>
+            <td data-i18n="wiring_row_5v">5V (ESP vom FC versorgen)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="hint" data-i18n="wiring_bf" style="margin-top:0.85rem;margin-bottom:0">
+        Betaflight: Ports → UART wählen → MSP aktivieren · Baud 115200.
+      </p>
 
     </div>
 
@@ -1041,6 +1144,352 @@
   <!-- ======================================================= -->
 
   <script type="module">
+
+    /*
+     * =========================================================
+     * I18N (DE / EN)
+     * =========================================================
+     */
+
+    const I18N = {
+      de: {
+        lead: "Firmware aus dem Browser flashen (Chrome / Edge). GoPro-Status ins Betaflight-OSD über MSP.",
+        install_title: "Install",
+        install_li1: "Daten-USB-Kabel verwenden, Serial Monitor / andere Tools am Port schließen.",
+        install_li2: "ESP32 direkt am PC anschließen (nicht nur über den Flight Controller).",
+        install_li3: "<strong>Connect</strong> klicken, Port wählen, Dialog folgen.",
+        install_li4: "Erster Flash kann Bonds und NVS-Einstellungen löschen.",
+        install_btn: "Connect & install",
+        install_unsupported: "Web Serial ist in diesem Browser nicht verfügbar. Desktop Chrome oder Edge über HTTPS nutzen.",
+        install_not_allowed: "Keine Berechtigung – Seite muss über HTTPS oder localhost laufen.",
+        install_boot_hint: "Boot-Modus nötig? <code>BOOT</code> halten, <code>RESET</code> drücken, <code>BOOT</code> loslassen, dann erneut Connect.",
+        hw_title: "Hardware-Nummer auslesen",
+        hw_hint: "Liest Chip-Typ und MAC-Adresse (eindeutige Hardware-ID) über den ROM-Bootloader. Gerät wird kurz zurückgesetzt.",
+        hw_li1: "Gleiches Daten-USB-Kabel, Port freigeben (kein Install/Serial Monitor parallel).",
+        hw_li2: "Bei Bedarf Boot-Modus: <code>BOOT</code> halten → <code>RESET</code> → <code>BOOT</code> loslassen.",
+        hw_li3: "<strong>Hardware-ID lesen</strong> klicken und den ESP-Port wählen.",
+        hw_read_btn: "Hardware-ID lesen",
+        hw_copy_btn: "Device ID kopieren",
+        hw_unsupported: "Web Serial nicht verfügbar. Desktop Chrome / Edge über HTTPS oder localhost verwenden.",
+        label_chip: "Chip",
+        label_mac: "MAC",
+        label_efuse: "getEfuseMac()",
+        label_features: "Features",
+        label_device_id: "Device ID",
+        label_firmware: "Firmware",
+        lic_title: "CamBridge Lizenz",
+        lic_hint: "Die Hardware-ID wird an den CamBridge Lizenzserver übertragen. Bei einer gültigen Lizenz wird der Server-Hash anschließend direkt über USB Serial an den ESP32 gesendet.",
+        lic_status_label: "Lizenzstatus",
+        lic_request_label: "Request ID",
+        lic_hash_label: "Server Hash",
+        lic_server_label: "Server",
+        serial_title: "ESP32 Serial Monitor",
+        serial_disconnected: "Nicht verbunden",
+        serial_connected: "USB Serial verbunden · 115200",
+        serial_hint: "Der Serial Monitor wird nach dem Auslesen der Hardware-ID automatisch mit 115200 Baud geöffnet.",
+        serial_clear: "Clear",
+        serial_close: "Serial schließen",
+        serial_closed_msg: "\n--- Serial geschlossen ---\n",
+        after_title: "Nach dem Flashen",
+        after_li1: "Wi-Fi SoftAP: SSID <code>GoProBridge</code> · Passwort <code>gopro1234</code>",
+        after_li2: "Portal: <code>http://192.168.4.1</code>",
+        after_li3: "FC UART: MSP @ 115200, TX/RX gekreuzt, gemeinsames GND",
+        after_li4: "OSD: Custom Message 1–4 in Betaflight aktivieren",
+        wiring_title: "Verdrahtung",
+        wiring_hint: "ESP32-C3 Super Mini ↔ Flight Controller (MSP @ 115200). TX/RX kreuzen, GND gemeinsam.",
+        wiring_col_esp: "Super Mini",
+        wiring_col_dir: "Richtung",
+        wiring_col_fc: "Flight Controller",
+        wiring_row_rx: "RX (UART)",
+        wiring_row_tx: "TX (UART)",
+        wiring_opt: "optional",
+        wiring_row_5v: "5V (ESP vom FC versorgen)",
+        wiring_bf: "Betaflight: Ports → UART wählen → MSP aktivieren · Baud 115200.",
+        st_pick_port: "Port wählen …",
+        st_https: "Seite muss über HTTPS oder localhost laufen (nicht file://).",
+        st_no_serial: "Web Serial nicht verfügbar.",
+        st_connect_bl: "Verbinde mit Bootloader (Reset) …",
+        st_chip_mac: "Chip: {chip} — lese MAC …",
+        st_hw_ok: "Hardware-ID gelesen.",
+        st_mac_efuse_fail: "MAC gelesen, Efuse-Format konnte nicht gebildet werden.",
+        st_mac_fail: "Chip erkannt, MAC konnte nicht gelesen werden.",
+        st_check_lic: "Hardware-ID gelesen — prüfe Lizenz …",
+        st_open_serial: "Öffne ESP32 Serial Monitor …",
+        st_send_json: "Lizenz bestätigt — sende JSON an ESP …",
+        st_json_sent: "Lizenz-JSON an ESP gesendet.",
+        st_json_fail: "Lizenz konnte nicht über Serial gesendet werden.",
+        st_done: "Fertig.",
+        st_copy_ok: "Device ID in Zwischenablage kopiert.",
+        st_copy_fail: "Kopieren fehlgeschlagen – Wert manuell markieren.",
+        st_err_boot: " Boot-Modus: BOOT halten → RESET → BOOT loslassen, dann erneut.",
+        st_err_timeout: " Verbindung fehlgeschlagen — Boot-Modus + Daten-USB-Kabel prüfen.",
+        st_err_port: " Port belegt? Serial Monitor / Install schließen.",
+        st_err_prefix: "Fehler: ",
+        lic_checking: "Prüfe Lizenz …",
+        lic_active: "✓ AKTIVIERT",
+        lic_inactive: "✗ NICHT LIZENZIERT",
+        lic_server_err: "⚠ SERVERFEHLER",
+        flash_title: "Flash",
+        flash_init: "Initializing…",
+        flash_prep: "Preparing…",
+        flash_erase: "Erasing…",
+        flash_write: "Writing…",
+        flash_write_pct: "Writing {pct}%",
+        flash_done: "Finished",
+        flash_err: "Error: {detail}",
+        title: "GoPro Bridge BLE – Web Installer"
+      },
+      en: {
+        lead: "Flash firmware from the browser (Chrome / Edge). Puts GoPro status into Betaflight OSD over MSP.",
+        install_title: "Install",
+        install_li1: "Use a data USB cable and close Serial Monitor / other tools using the port.",
+        install_li2: "Connect the ESP32 directly to the PC (not only via the flight controller).",
+        install_li3: "Click <strong>Connect</strong>, pick the serial port, follow the dialog.",
+        install_li4: "First flash may erase bonds and NVS settings.",
+        install_btn: "Connect & install",
+        install_unsupported: "Web Serial is not available in this browser. Use desktop Chrome or Edge over HTTPS.",
+        install_not_allowed: "Permission denied – page must be served over HTTPS or localhost.",
+        install_boot_hint: "Need boot mode? Hold <code>BOOT</code>, press <code>RESET</code>, release <code>BOOT</code>, then Connect again.",
+        hw_title: "Read hardware ID",
+        hw_hint: "Reads chip type and MAC address (unique hardware ID) via the ROM bootloader. The device is reset briefly.",
+        hw_li1: "Same data USB cable, free the port (no Install/Serial Monitor in parallel).",
+        hw_li2: "If needed, boot mode: hold <code>BOOT</code> → <code>RESET</code> → release <code>BOOT</code>.",
+        hw_li3: "Click <strong>Read hardware ID</strong> and select the ESP port.",
+        hw_read_btn: "Read hardware ID",
+        hw_copy_btn: "Copy Device ID",
+        hw_unsupported: "Web Serial not available. Use desktop Chrome / Edge over HTTPS or localhost.",
+        label_chip: "Chip",
+        label_mac: "MAC",
+        label_efuse: "getEfuseMac()",
+        label_features: "Features",
+        label_device_id: "Device ID",
+        label_firmware: "Firmware",
+        lic_title: "CamBridge license",
+        lic_hint: "The hardware ID is sent to the CamBridge license server. If licensed, the server hash is then sent to the ESP32 over USB Serial.",
+        lic_status_label: "License status",
+        lic_request_label: "Request ID",
+        lic_hash_label: "Server hash",
+        lic_server_label: "Server",
+        serial_title: "ESP32 Serial Monitor",
+        serial_disconnected: "Disconnected",
+        serial_connected: "USB Serial connected · 115200",
+        serial_hint: "The serial monitor opens automatically at 115200 baud after reading the hardware ID.",
+        serial_clear: "Clear",
+        serial_close: "Close serial",
+        serial_closed_msg: "\n--- Serial closed ---\n",
+        after_title: "After flashing",
+        after_li1: "Wi-Fi SoftAP: SSID <code>GoProBridge</code> · password <code>gopro1234</code>",
+        after_li2: "Portal: <code>http://192.168.4.1</code>",
+        after_li3: "FC UART: MSP @ 115200, TX/RX crossed, common GND",
+        after_li4: "OSD: enable Custom Message 1–4 in Betaflight",
+        wiring_title: "Wiring",
+        wiring_hint: "ESP32-C3 Super Mini ↔ Flight Controller (MSP @ 115200). Cross TX/RX, share GND.",
+        wiring_col_esp: "Super Mini",
+        wiring_col_dir: "Direction",
+        wiring_col_fc: "Flight Controller",
+        wiring_row_rx: "RX (UART)",
+        wiring_row_tx: "TX (UART)",
+        wiring_opt: "optional",
+        wiring_row_5v: "5V (power ESP from FC)",
+        wiring_bf: "Betaflight: Ports → select UART → enable MSP · baud 115200.",
+        st_pick_port: "Select port…",
+        st_https: "Page must run over HTTPS or localhost (not file://).",
+        st_no_serial: "Web Serial not available.",
+        st_connect_bl: "Connecting to bootloader (reset)…",
+        st_chip_mac: "Chip: {chip} — reading MAC…",
+        st_hw_ok: "Hardware ID read.",
+        st_mac_efuse_fail: "MAC read, but efuse format could not be built.",
+        st_mac_fail: "Chip detected, MAC could not be read.",
+        st_check_lic: "Hardware ID read — checking license…",
+        st_open_serial: "Opening ESP32 serial monitor…",
+        st_send_json: "License confirmed — sending JSON to ESP…",
+        st_json_sent: "License JSON sent to ESP.",
+        st_json_fail: "Could not send license over serial.",
+        st_done: "Done.",
+        st_copy_ok: "Device ID copied to clipboard.",
+        st_copy_fail: "Copy failed – select the value manually.",
+        st_err_boot: " Boot mode: hold BOOT → RESET → release BOOT, then retry.",
+        st_err_timeout: " Connection failed — check boot mode + data USB cable.",
+        st_err_port: " Port in use? Close Serial Monitor / Install.",
+        st_err_prefix: "Error: ",
+        lic_checking: "Checking license…",
+        lic_active: "✓ ACTIVE",
+        lic_inactive: "✗ NOT LICENSED",
+        lic_server_err: "⚠ SERVER ERROR",
+        flash_title: "Flash",
+        flash_init: t("flash_init"),
+        flash_prep: t("flash_prep"),
+        flash_erase: t("flash_erase"),
+        flash_write: t("flash_write"),
+        flash_write_pct: "Writing {pct}%",
+        flash_done: t("flash_done"),
+        flash_err: "Error: {detail}",
+        title: "GoPro Bridge BLE – Web Installer"
+      }
+    };
+
+    let currentLang =
+      localStorage.getItem("cambridge_lang") ||
+      (
+        (navigator.language || "").toLowerCase().startsWith("de")
+          ? "de"
+          : "en"
+      );
+
+    if (
+      currentLang !== "de" &&
+      currentLang !== "en"
+    )
+    {
+      currentLang = "en";
+    }
+
+    function t(key, vars)
+    {
+      const table =
+        I18N[currentLang] ||
+        I18N.en;
+
+      let s =
+        table[key] ??
+        I18N.en[key] ??
+        key;
+
+      if (vars)
+      {
+        for (const [k, v] of Object.entries(vars))
+        {
+          s = s.replace(
+            new RegExp(
+              "\\{" + k + "\\}",
+              "g"
+            ),
+            String(v)
+          );
+        }
+      }
+
+      return s;
+    }
+
+    function applyLanguage(lang)
+    {
+      currentLang =
+        lang === "de"
+          ? "de"
+          : "en";
+
+      localStorage.setItem(
+        "cambridge_lang",
+        currentLang
+      );
+
+      document.documentElement.lang =
+        currentLang;
+
+      document.title =
+        t("title");
+
+      document
+        .querySelectorAll("[data-i18n]")
+        .forEach(
+          (el) =>
+          {
+            const key =
+              el.getAttribute(
+                "data-i18n"
+              );
+
+            if (!key)
+              return;
+
+            // keep live serial status if connected
+            if (
+              el.id === "serialStatus" &&
+              el.classList.contains(
+                "connected"
+              )
+            )
+            {
+              el.textContent =
+                t("serial_connected");
+              return;
+            }
+
+            el.textContent =
+              t(key);
+          }
+        );
+
+      document
+        .querySelectorAll("[data-i18n-html]")
+        .forEach(
+          (el) =>
+          {
+            const key =
+              el.getAttribute(
+                "data-i18n-html"
+              );
+
+            if (!key)
+              return;
+
+            el.innerHTML =
+              t(key);
+          }
+        );
+
+      const btnDe =
+        document.getElementById(
+          "langDe"
+        );
+
+      const btnEn =
+        document.getElementById(
+          "langEn"
+        );
+
+      if (btnDe)
+        btnDe.classList.toggle(
+          "active",
+          currentLang === "de"
+        );
+
+      if (btnEn)
+        btnEn.classList.toggle(
+          "active",
+          currentLang === "en"
+        );
+    }
+
+    document
+      .getElementById(
+        "langDe"
+      )
+      ?.addEventListener(
+        "click",
+        () =>
+          applyLanguage(
+            "de"
+          )
+      );
+
+    document
+      .getElementById(
+        "langEn"
+      )
+      ?.addEventListener(
+        "click",
+        () =>
+          applyLanguage(
+            "en"
+          )
+      );
+
+    applyLanguage(
+      currentLang
+    );
+
 
     /*
      * =========================================================
@@ -1064,6 +1513,9 @@
 
     const LICENSE_SERVER =
       "https://gopro-license-server.goprobridge.workers.dev/api/license/check";
+
+    const FLASH_LOG_SERVER =
+      "https://gopro-license-server.goprobridge.workers.dev/api/flash/log";
 
     const FIRMWARE_VERSION =
       "1.0.0";
@@ -1638,7 +2090,7 @@
       catch (_) {}
 
       setSerialStatus(
-        "USB Serial verbunden · 115200",
+        t("serial_connected"),
         "connected"
       );
 
@@ -1824,7 +2276,7 @@ await sendSerial(
     )
     {
       licenseEl.textContent =
-        "Prüfe Lizenz …";
+        t("lic_checking");
 
       licenseEl.className =
         "value license-pending";
@@ -1906,7 +2358,7 @@ await sendSerial(
         )
         {
           licenseEl.textContent =
-            "✗ NICHT LIZENZIERT";
+            t("lic_inactive");
 
           licenseEl.className =
             "value license-inactive";
@@ -1930,7 +2382,7 @@ await sendSerial(
 
 
         licenseEl.textContent =
-          "✓ AKTIVIERT";
+          t("lic_active");
 
         licenseEl.className =
           "value license-active";
@@ -1949,7 +2401,7 @@ await sendSerial(
         );
 
         licenseEl.textContent =
-          "⚠ SERVERFEHLER";
+          t("lic_server_err");
 
         licenseEl.className =
           "value license-inactive";
@@ -2005,7 +2457,7 @@ await sendSerial(
       catch (_) {}
 
       setSerialStatus(
-        "Nicht verbunden"
+        t("serial_disconnected")
       );
     }
 
@@ -2023,7 +2475,7 @@ await sendSerial(
       )
       {
         setStatus(
-          "Web Serial nicht verfügbar.",
+          t("st_no_serial"),
           "error"
         );
 
@@ -2047,7 +2499,7 @@ await sendSerial(
       )
       {
         setStatus(
-          "Seite muss über HTTPS oder localhost laufen (nicht file://).",
+          t("st_https"),
           "error"
         );
 
@@ -2068,7 +2520,7 @@ await sendSerial(
 
 
       setStatus(
-        "Port wählen …"
+        t("st_pick_port")
       );
 
       // Fresh terminal for this run
@@ -2109,7 +2561,7 @@ let transport =
 
 
         setStatus(
-          "Verbinde mit Bootloader (Reset) …"
+          t("st_connect_bl")
         );
 
 
@@ -2190,9 +2642,10 @@ let transport =
 
 
         setStatus(
-          "Chip: " +
-          chipName +
-          " — lese MAC …"
+          t(
+            "st_chip_mac",
+            { chip: chipName }
+          )
         );
 
 
@@ -2417,21 +2870,21 @@ let transport =
         if (efuseHex)
         {
           setStatus(
-            "Hardware-ID gelesen.",
+            t("st_hw_ok"),
             "ok"
           );
         }
         else if (mac)
         {
           setStatus(
-            "MAC gelesen, Efuse-Format konnte nicht gebildet werden.",
+            t("st_mac_efuse_fail"),
             "error"
           );
         }
         else
         {
           setStatus(
-            "Chip erkannt, MAC konnte nicht gelesen werden.",
+            t("st_mac_fail"),
             "error"
           );
         }
@@ -2452,7 +2905,7 @@ let transport =
 
 
         setStatus(
-          "Hardware-ID gelesen — prüfe Lizenz …"
+          t("st_check_lic")
         );
 
 
@@ -2509,7 +2962,7 @@ let transport =
          */
 
         setStatus(
-          "Öffne ESP32 Serial Monitor …"
+          t("st_open_serial")
         );
 
 
@@ -2537,7 +2990,7 @@ let transport =
         )
         {
           setStatus(
-            "Lizenz bestätigt — sende JSON an ESP …"
+            t("st_send_json")
           );
 
 
@@ -2551,7 +3004,7 @@ let transport =
 
 
             setStatus(
-              "Lizenz-JSON an ESP gesendet.",
+              t("st_json_sent"),
               "ok"
             );
 
@@ -2563,7 +3016,7 @@ let transport =
             );
 
             setStatus(
-              "Lizenz konnte nicht über Serial gesendet werden.",
+              t("st_json_fail"),
               "error"
             );
           }
@@ -2577,7 +3030,7 @@ let transport =
          */
 
         setStatus(
-          "Fertig.",
+          t("st_done"),
           "ok"
         );
       }
@@ -2596,7 +3049,7 @@ let transport =
 
 
         let hint =
-          " Boot-Modus: BOOT halten → RESET → BOOT loslassen, dann erneut.";
+          t("st_err_boot");
 
 
         if (
@@ -2605,7 +3058,7 @@ let transport =
         )
         {
           hint =
-            " Verbindung fehlgeschlagen — Boot-Modus + Daten-USB-Kabel prüfen.";
+            t("st_err_timeout");
         }
         else if (
           /NetworkError|Failed to open/i
@@ -2613,12 +3066,12 @@ let transport =
         )
         {
           hint =
-            " Port belegt? Serial Monitor / Install schließen.";
+            t("st_err_port");
         }
 
 
         setStatus(
-          "Fehler: " +
+          t("st_err_prefix") +
           msg +
           hint,
           "error"
@@ -2686,14 +3139,14 @@ let transport =
 
 
           setStatus(
-            "Device ID in Zwischenablage kopiert.",
+            t("st_copy_ok"),
             "ok"
           );
         }
         catch (_)
         {
           setStatus(
-            "Kopieren fehlgeschlagen – Wert manuell markieren.",
+            t("st_copy_fail"),
             "error"
           );
         }
@@ -2753,7 +3206,7 @@ let transport =
         await closeSerial();
 
         serialLog(
-          "\n--- Serial geschlossen ---\n"
+          t("serial_closed_msg")
         );
       }
     );
@@ -2776,10 +3229,474 @@ let transport =
         "block";
 
       setStatus(
-        "Web Serial nicht verfügbar.",
+        t("st_no_serial"),
         "error"
       );
     }
+
+
+    /*
+     * =========================================================
+     * FLASH LOGGING (esp-web-tools)
+     * =========================================================
+     */
+
+    const espInstallBtn =
+      document.getElementById(
+        "espInstallBtn"
+      );
+
+    let flashLogStarted =
+      false;
+
+    let lastFlashPercent =
+      -1;
+
+    let flashSessionId =
+      null;
+
+    let flashDbReported =
+      {
+        started: false,
+        finished: false,
+        error: false
+      };
+
+    function newFlashSessionId()
+    {
+      if (
+        typeof crypto !== "undefined" &&
+        crypto.randomUUID
+      )
+      {
+        return crypto.randomUUID();
+      }
+
+      return (
+        "flash-" +
+        Date.now().toString(36) +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2, 10)
+      );
+    }
+
+    function logFlashLine(line)
+    {
+      if (!flashLogStarted)
+      {
+        serialOutputEl.textContent =
+          "";
+
+        serialLog(
+          "----------------------------------------\n" +
+          t("flash_title") +
+          "\n"
+        );
+
+        flashLogStarted =
+          true;
+      }
+
+      serialLog(
+        line +
+        "\n"
+      );
+    }
+
+    /**
+     * Persist flash event to backend DB (Cloudflare Worker).
+     * Fire-and-forget — must not block the UI.
+     */
+    async function reportFlashToDatabase(event, state)
+    {
+      try
+      {
+        const details =
+          (state && state.details) ||
+          {};
+
+        const payload =
+        {
+          event:
+            event,
+
+          session_id:
+            flashSessionId,
+
+          device_id:
+            lastDeviceId ||
+            null,
+
+          firmware:
+            FIRMWARE_VERSION,
+
+          chip_family:
+            (
+              state &&
+              state.chipFamily
+            ) ||
+            null,
+
+          message:
+            (
+              state &&
+              state.message
+            ) ||
+            null,
+
+          percentage:
+            typeof details.percentage ===
+              "number"
+              ? details.percentage
+              : null,
+
+          bytes_written:
+            typeof details.bytesWritten ===
+              "number"
+              ? details.bytesWritten
+              : null,
+
+          bytes_total:
+            typeof details.bytesTotal ===
+              "number"
+              ? details.bytesTotal
+              : null,
+
+          error:
+            event === "error"
+              ? (
+                  details.error ||
+                  (
+                    details.details &&
+                    (
+                      details.details.message ||
+                      String(
+                        details.details
+                      )
+                    )
+                  ) ||
+                  (
+                    state &&
+                    state.message
+                  ) ||
+                  "error"
+                )
+              : null,
+
+          user_agent:
+            navigator.userAgent,
+
+          page:
+            location.href,
+
+          timestamp:
+            new Date()
+              .toISOString()
+        };
+
+        await fetch(
+          FLASH_LOG_SERVER,
+          {
+            method:
+              "POST",
+
+            headers:
+            {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
+                payload
+              ),
+
+            keepalive:
+              true
+          }
+        );
+      }
+      catch (err)
+      {
+        console.warn(
+          "Flash DB log failed:",
+          err
+        );
+      }
+    }
+
+    function handleFlashState(state)
+    {
+      if (
+        !state ||
+        !state.state
+      )
+      {
+        return;
+      }
+
+      const s =
+        state.state;
+
+      if (
+        s === "initializing"
+      )
+      {
+        lastFlashPercent =
+          -1;
+
+        flashSessionId =
+          newFlashSessionId();
+
+        flashDbReported =
+        {
+          started:
+            false,
+
+          finished:
+            false,
+
+          error:
+            false
+        };
+
+        logFlashLine(
+          state.message ||
+          t("flash_init")
+        );
+
+        if (
+          !flashDbReported.started
+        )
+        {
+          flashDbReported.started =
+            true;
+
+          reportFlashToDatabase(
+            "started",
+            state
+          );
+        }
+      }
+      else if (
+        s === "preparing"
+      )
+      {
+        logFlashLine(
+          state.message ||
+          t("flash_prep")
+        );
+      }
+      else if (
+        s === "erasing"
+      )
+      {
+        logFlashLine(
+          state.message ||
+          t("flash_erase")
+        );
+      }
+      else if (
+        s === "writing"
+      )
+      {
+        const pct =
+          state.details &&
+          typeof state.details.percentage ===
+            "number"
+            ? state.details.percentage
+            : null;
+
+        if (
+          pct === null
+        )
+        {
+          logFlashLine(
+            state.message ||
+            t("flash_write")
+          );
+        }
+        else
+        {
+          const bucket =
+            Math.floor(
+              pct / 10
+            ) * 10;
+
+          if (
+            bucket !==
+              lastFlashPercent ||
+            pct >= 100
+          )
+          {
+            lastFlashPercent =
+              bucket;
+
+            logFlashLine(
+              t(
+                "flash_write_pct",
+                { pct: pct }
+              )
+            );
+          }
+        }
+      }
+      else if (
+        s === "finished"
+      )
+      {
+        logFlashLine(
+          state.message ||
+          t("flash_done")
+        );
+
+        serialLog(
+          "----------------------------------------\n"
+        );
+
+        if (
+          !flashDbReported.finished
+        )
+        {
+          flashDbReported.finished =
+            true;
+
+          reportFlashToDatabase(
+            "finished",
+            state
+          );
+        }
+
+        flashLogStarted =
+          false;
+
+        lastFlashPercent =
+          -1;
+      }
+      else if (
+        s === "error"
+      )
+      {
+        const detail =
+          state.details &&
+          state.details.details
+            ? (
+                state.details.details.message ||
+                String(
+                  state.details.details
+                )
+              )
+            : (
+                state.message ||
+                "unknown"
+              );
+
+        logFlashLine(
+          t(
+            "flash_err",
+            { detail: detail }
+          )
+        );
+
+        serialLog(
+          "----------------------------------------\n"
+        );
+
+        if (
+          !flashDbReported.error
+        )
+        {
+          flashDbReported.error =
+            true;
+
+          reportFlashToDatabase(
+            "error",
+            state
+          );
+        }
+
+        flashLogStarted =
+          false;
+
+        lastFlashPercent =
+          -1;
+      }
+    }
+
+    if (espInstallBtn)
+    {
+      espInstallBtn.addEventListener(
+        "state-changed",
+        (event) =>
+        {
+          handleFlashState(
+            event.detail ||
+            espInstallBtn.state
+          );
+        }
+      );
+    }
+
+    // Fallback: dialog may carry state (esp-web-tools internals)
+    const flashDialogObserver =
+      new MutationObserver(
+        (mutations) =>
+        {
+          for (const mutation of mutations)
+          {
+            for (const node of mutation.addedNodes)
+            {
+              if (
+                !node ||
+                node.nodeType !==
+                  1
+              )
+              {
+                continue;
+              }
+
+              const tag =
+                (
+                  node.tagName ||
+                  ""
+                )
+                .toUpperCase();
+
+              if (
+                tag ===
+                  "EWT-INSTALL-DIALOG" ||
+                tag.includes(
+                  "INSTALL-DIALOG"
+                )
+              )
+              {
+                node.addEventListener(
+                  "state-changed",
+                  (event) =>
+                  {
+                    handleFlashState(
+                      event.detail
+                    );
+                  }
+                );
+              }
+            }
+          }
+        }
+      );
+
+    flashDialogObserver.observe(
+      document.body,
+      {
+        childList:
+          true,
+
+        subtree:
+          true
+      }
+    );
 
 
     /*
