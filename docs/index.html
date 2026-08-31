@@ -271,6 +271,28 @@
     }
 
 
+
+    #paypal-button-container {
+      margin-top: 0.85rem;
+      min-height: 45px;
+    }
+
+    .buy-box {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .buy-status {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    .buy-status.ok { color: var(--success); }
+    .buy-status.error { color: var(--error); }
+
     .wiring-table {
       width: 100%;
       border-collapse: collapse;
@@ -987,6 +1009,20 @@
 
       </div>
 
+      <div class="buy-box">
+        <h3 style="margin:0 0 0.5rem;font-size:1rem" data-i18n="buy_title">
+          Lizenz kaufen
+        </h3>
+        <p class="hint" style="margin:0" data-i18n="buy_hint">
+          Zuerst Hardware-ID lesen, dann mit PayPal bezahlen.
+          Die Device ID wird der Zahlung zugeordnet und die Lizenz automatisch freigeschaltet.
+        </p>
+        <p class="hint" id="buyDeviceLine" style="margin:0.5rem 0 0">
+          Device ID: <code id="buyDeviceId">—</code>
+        </p>
+        <div id="paypal-button-container"></div>
+        <p class="buy-status" id="buyStatus"></p>
+      </div>
 
     </div>
 
@@ -1183,6 +1219,14 @@
         lic_request_label: "Request ID",
         lic_hash_label: "Server Hash",
         lic_server_label: "Server",
+        buy_title: "Lizenz kaufen",
+        buy_hint: "Zuerst Hardware-ID lesen, dann mit PayPal bezahlen. Die Device ID wird der Zahlung zugeordnet und die Lizenz automatisch freigeschaltet.",
+        buy_need_id: "Bitte zuerst Hardware-ID lesen.",
+        buy_loading: "PayPal wird geladen …",
+        buy_ok: "Zahlung OK – Lizenz aktiviert. Bitte erneut Hardware-ID lesen / aktivieren.",
+        buy_fail: "Zahlung fehlgeschlagen.",
+        buy_already: "Dieses Gerät ist bereits lizenziert.",
+        buy_not_cfg: "PayPal ist noch nicht konfiguriert.",
         serial_title: "ESP32 Serial Monitor",
         serial_disconnected: "Nicht verbunden",
         serial_connected: "USB Serial verbunden · 115200",
@@ -1270,6 +1314,15 @@
         lic_request_label: "Request ID",
         lic_hash_label: "Server hash",
         lic_server_label: "Server",
+        buy_title: "Buy license",
+        buy_hint: "Read the hardware ID first, then pay with PayPal. The device ID is attached to the payment and the license is activated automatically.",
+        buy_need_id: "Please read the hardware ID first.",
+        buy_loading: "Loading PayPal…",
+        buy_ok: "Payment OK – license activated. Read hardware ID again to activate on device.",
+        buy_fail: "Payment failed.",
+        buy_already: "This device is already licensed.",
+        buy_not_cfg: "PayPal is not configured yet.",
+
         serial_title: "ESP32 Serial Monitor",
         serial_disconnected: "Disconnected",
         serial_connected: "USB Serial connected · 115200",
@@ -1516,6 +1569,15 @@
 
     const FLASH_LOG_SERVER =
       "https://gopro-license-server.goprobridge.workers.dev/api/flash/log";
+
+    const PAYPAL_CONFIG_URL =
+      "https://gopro-license-server.goprobridge.workers.dev/api/paypal/config";
+
+    const PAYPAL_CREATE_URL =
+      "https://gopro-license-server.goprobridge.workers.dev/api/paypal/create-order";
+
+    const PAYPAL_CAPTURE_URL =
+      "https://gopro-license-server.goprobridge.workers.dev/api/paypal/capture-order";
 
     const FIRMWARE_VERSION =
       "1.0.0";
@@ -2847,6 +2909,21 @@ let transport =
         deviceIdEl.textContent =
           deviceId ||
           "—";
+
+        const buyDeviceIdEl =
+          document.getElementById(
+            "buyDeviceId"
+          );
+
+        if (buyDeviceIdEl)
+        {
+          buyDeviceIdEl.textContent =
+            deviceId ||
+            "—";
+        }
+
+        // Re-init PayPal buttons when device ID known
+        initPayPalButtons();
 
 
         firmwareEl.textContent =
@@ -4322,6 +4399,357 @@ let transport =
       );
 
 
+
+    /*
+     * =========================================================
+     * PAYPAL BUY LICENSE
+     * =========================================================
+     */
+
+    const buyStatusEl =
+      document.getElementById(
+        "buyStatus"
+      );
+
+    function setBuyStatus(msg, kind)
+    {
+      if (!buyStatusEl)
+        return;
+
+      buyStatusEl.textContent =
+        msg ||
+        "";
+
+      buyStatusEl.className =
+        "buy-status" +
+        (
+          kind
+            ? " " + kind
+            : ""
+        );
+    }
+
+    let paypalSdkLoading =
+      null;
+
+    function loadPayPalSdk(clientId, currency)
+    {
+      if (
+        window.paypal
+      )
+      {
+        return Promise.resolve();
+      }
+
+      if (paypalSdkLoading)
+      {
+        return paypalSdkLoading;
+      }
+
+      paypalSdkLoading =
+        new Promise(
+          (resolve, reject) =>
+          {
+            const script =
+              document.createElement(
+                "script"
+              );
+
+            script.src =
+              "https://www.paypal.com/sdk/js?client-id=" +
+              encodeURIComponent(
+                clientId
+              ) +
+              "&currency=" +
+              encodeURIComponent(
+                currency ||
+                "EUR"
+              );
+
+            script.onload =
+              () =>
+                resolve();
+
+            script.onerror =
+              () =>
+                reject(
+                  new Error(
+                    "PayPal SDK load failed"
+                  )
+                );
+
+            document.head.appendChild(
+              script
+            );
+          }
+        );
+
+      return paypalSdkLoading;
+    }
+
+    let paypalButtonsRendered =
+      false;
+
+    async function initPayPalButtons()
+    {
+      const container =
+        document.getElementById(
+          "paypal-button-container"
+        );
+
+      if (!container)
+        return;
+
+      if (!lastDeviceId)
+      {
+        container.innerHTML =
+          "";
+
+        paypalButtonsRendered =
+          false;
+
+        setBuyStatus(
+          t("buy_need_id")
+        );
+
+        return;
+      }
+
+      setBuyStatus(
+        t("buy_loading")
+      );
+
+      try
+      {
+        const cfgRes =
+          await fetch(
+            PAYPAL_CONFIG_URL
+          );
+
+        const cfg =
+          await cfgRes.json();
+
+        if (
+          !cfgRes.ok ||
+          !cfg.configured
+        )
+        {
+          setBuyStatus(
+            t("buy_not_cfg"),
+            "error"
+          );
+
+          return;
+        }
+
+        await loadPayPalSdk(
+          cfg.client_id,
+          cfg.currency
+        );
+
+        container.innerHTML =
+          "";
+
+        paypalButtonsRendered =
+          true;
+
+        window.paypal
+          .Buttons(
+            {
+              style:
+              {
+                layout:
+                  "vertical",
+                color:
+                  "gold",
+                shape:
+                  "rect",
+                label:
+                  "pay"
+              },
+
+              createOrder:
+                async () =>
+                {
+                  if (!lastDeviceId)
+                  {
+                    throw new Error(
+                      t("buy_need_id")
+                    );
+                  }
+
+                  const res =
+                    await fetch(
+                      PAYPAL_CREATE_URL,
+                      {
+                        method:
+                          "POST",
+
+                        headers:
+                        {
+                          "Content-Type":
+                            "application/json"
+                        },
+
+                        body:
+                          JSON.stringify(
+                            {
+                              device_id:
+                                lastDeviceId
+                            }
+                          )
+                      }
+                    );
+
+                  const data =
+                    await res.json();
+
+                  if (
+                    res.status === 409
+                  )
+                  {
+                    setBuyStatus(
+                      t("buy_already"),
+                      "ok"
+                    );
+
+                    throw new Error(
+                      "already_licensed"
+                    );
+                  }
+
+                  if (
+                    !res.ok ||
+                    !data.id
+                  )
+                  {
+                    throw new Error(
+                      data.error ||
+                      "create-order failed"
+                    );
+                  }
+
+                  return data.id;
+                },
+
+              onApprove:
+                async (data) =>
+                {
+                  setBuyStatus(
+                    t("buy_loading")
+                  );
+
+                  const res =
+                    await fetch(
+                      PAYPAL_CAPTURE_URL,
+                      {
+                        method:
+                          "POST",
+
+                        headers:
+                        {
+                          "Content-Type":
+                            "application/json"
+                        },
+
+                        body:
+                          JSON.stringify(
+                            {
+                              order_id:
+                                data.orderID,
+
+                              device_id:
+                                lastDeviceId
+                            }
+                          )
+                      }
+                    );
+
+                  const result =
+                    await res.json();
+
+                  if (
+                    !res.ok ||
+                    !result.ok
+                  )
+                  {
+                    setBuyStatus(
+                      t("buy_fail") +
+                      " " +
+                      (
+                        result.error ||
+                        ""
+                      ),
+                      "error"
+                    );
+
+                    return;
+                  }
+
+                  setBuyStatus(
+                    t("buy_ok"),
+                    "ok"
+                  );
+
+                  // Refresh license status on page
+                  if (
+                    lastDeviceId &&
+                    typeof checkLicense ===
+                      "function"
+                  )
+                  {
+                    try
+                    {
+                      await checkLicense(
+                        lastDeviceId,
+                        document
+                          .getElementById(
+                            "hwChip"
+                          )
+                          ?.textContent ||
+                        ""
+                      );
+                    }
+                    catch (_) {}
+                  }
+                },
+
+              onError:
+                (err) =>
+                {
+                  console.error(
+                    err
+                  );
+
+                  setBuyStatus(
+                    t("buy_fail"),
+                    "error"
+                  );
+                }
+            }
+          )
+          .render(
+            "#paypal-button-container"
+          );
+
+        setBuyStatus(
+          ""
+        );
+      }
+      catch (err)
+      {
+        console.error(
+          err
+        );
+
+        setBuyStatus(
+          t("buy_fail"),
+          "error"
+        );
+      }
+    }
+
+
     /*
      * =========================================================
      * INITIAL UI
@@ -4330,6 +4758,12 @@ let transport =
 
     firmwareEl.textContent =
       FIRMWARE_VERSION;
+
+    setBuyStatus(
+      t("buy_need_id")
+    );
+
+    initPayPalButtons();
 
 
     serialOutputEl.textContent = "";
