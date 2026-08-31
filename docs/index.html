@@ -3442,9 +3442,33 @@ let transport =
 
       try
       {
-        // Prefer previously granted port if still available
+        // Give install dialog time to release the serial port
+        await sleep(
+          1200
+        );
+
         const ports =
           await navigator.serial.getPorts();
+
+        // Close any still-open ports from the flash dialog
+        for (const p of ports)
+        {
+          try
+          {
+            if (
+              p.readable ||
+              p.writable
+            )
+            {
+              await p.close();
+            }
+          }
+          catch (_) {}
+        }
+
+        await sleep(
+          300
+        );
 
         if (
           ports &&
@@ -3462,22 +3486,23 @@ let transport =
             );
         }
 
-        await port.open(
+        // Always start from a closed port
+        try
+        {
+          if (
+            port.readable ||
+            port.writable
+          )
           {
-            baudRate:
-              115200,
-            bufferSize:
-              8192
+            await port.close();
           }
-        )
-          .catch(
-            () =>
-            {
-              // may already be open / just released
-            }
-          );
+        }
+        catch (_) {}
 
-        // Ensure we have a usable port for Transport
+        await sleep(
+          150
+        );
+
         transport =
           new Transport(
             port,
@@ -3501,6 +3526,7 @@ let transport =
             }
           );
 
+        // Transport.connect opens the port
         const chipName =
           await esploader.main(
             "default_reset"
@@ -3589,7 +3615,10 @@ let transport =
         {
           if (
             port &&
-            port.close
+            (
+              port.readable ||
+              port.writable
+            )
           )
           {
             await port.close();
@@ -3633,7 +3662,10 @@ let transport =
         {
           if (
             port &&
-            port.close
+            (
+              port.readable ||
+              port.writable
+            )
           )
           {
             await port.close();
