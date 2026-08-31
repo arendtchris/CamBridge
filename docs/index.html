@@ -4,11 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>GoPro CamBridge – Web Installer</title>
+  <title>GoPro Bridge BLE – Web Installer</title>
 
   <meta
     name="description"
-    content="Flash GoPro CamBridge firmware to ESP32-C3 from the browser. Hardware-ID und Lizenzprüfung."
+    content="Flash GoPro Bridge BLE firmware to ESP32-C3 from the browser. Hardware-ID und Lizenzprüfung."
   />
 
   <style>
@@ -676,7 +676,7 @@
       </div>
     </div>
 
-    <h1>GoPro CamBridge</h1>
+    <h1>GoPro Bridge BLE</h1>
 
     <p class="lead" data-i18n="lead">
       Firmware aus dem Browser flashen (Chrome / Edge).
@@ -1237,7 +1237,7 @@
         flash_write_pct: "Writing {pct}%",
         flash_done: "Finished",
         flash_err: "Error: {detail}",
-        title: "GoPro CamBridge – Web Installer"
+        title: "GoPro Bridge BLE – Web Installer"
       },
       en: {
         lead: "Flash firmware from the browser (Chrome / Edge). Puts GoPro status into Betaflight OSD over MSP.",
@@ -1324,7 +1324,7 @@
         flash_write_pct: "Writing {pct}%",
         flash_done: "Finished",
         flash_err: "Error: {detail}",
-        title: "GoPro CamBridge – Web Installer"
+        title: "GoPro Bridge BLE – Web Installer"
       }
     };
 
@@ -3639,7 +3639,345 @@ let transport =
       );
     }
 
-    // Fallback: dialog may carry state (esp-web-tools internals)
+    /*
+     * Robust flash detection for esp-web-tools @10:
+     * state-changed is often not emitted on the host.
+     * We watch the install dialog open/close + text content.
+     */
+    function isInstallDialog(node)
+    {
+      if (
+        !node ||
+        node.nodeType !== 1
+      )
+      {
+        return false;
+      }
+
+      const tag =
+        (
+          node.tagName ||
+          ""
+        )
+        .toUpperCase();
+
+      return (
+        tag === "EWT-INSTALL-DIALOG" ||
+        tag.includes("INSTALL-DIALOG")
+      );
+    }
+
+    function textFromNode(node)
+    {
+      try
+      {
+        return (
+          (
+            node.shadowRoot &&
+            node.shadowRoot.textContent
+          ) ||
+          node.textContent ||
+          ""
+        )
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+      catch (_)
+      {
+        return "";
+      }
+    }
+
+    function watchInstallDialog(dialog)
+    {
+      if (
+        !dialog ||
+        dialog.__cambridgeFlashWatched
+      )
+      {
+        return;
+      }
+
+      dialog.__cambridgeFlashWatched =
+        true;
+
+      // New flash session when dialog opens
+      flashSessionId =
+        newFlashSessionId();
+
+      flashDbReported =
+      {
+        started:
+          false,
+
+        finished:
+          false,
+
+        error:
+          false
+      };
+
+      lastFlashPercent =
+        -1;
+
+      handleFlashState(
+        {
+          state:
+            "initializing",
+
+          message:
+            t("flash_init")
+        }
+      );
+
+      let sawWriting =
+        false;
+
+      let sawFinished =
+        false;
+
+      let sawError =
+        false;
+
+      const scan = () =>
+      {
+        const text =
+          textFromNode(
+            dialog
+          )
+          .toLowerCase();
+
+        if (!text)
+        {
+          return;
+        }
+
+        // Progress / writing
+        if (
+          /writ|install|flash|eras|prepar|progress|%/.test(
+            text
+          )
+        )
+        {
+          sawWriting =
+            true;
+
+          const m =
+            text.match(
+              /(\d{1,3})\s*%/
+            );
+
+          if (m)
+          {
+            const pct =
+              Math.min(
+                100,
+                parseInt(
+                  m[1],
+                  10
+                )
+              );
+
+            handleFlashState(
+              {
+                state:
+                  "writing",
+
+                message:
+                  t(
+                    "flash_write_pct",
+                    { pct: pct }
+                  ),
+
+                details:
+                {
+                  percentage:
+                    pct
+                }
+              }
+            );
+          }
+          else if (
+            !flashLogStarted ||
+            lastFlashPercent < 0
+          )
+          {
+            handleFlashState(
+              {
+                state:
+                  "preparing",
+
+                message:
+                  t("flash_prep")
+              }
+            );
+          }
+        }
+
+        // Success
+        if (
+          /complete|finished|success|done|erfolgreich|fertig/.test(
+            text
+          )
+        )
+        {
+          sawFinished =
+            true;
+
+          handleFlashState(
+            {
+              state:
+                "finished",
+
+              message:
+                t("flash_done")
+            }
+          );
+        }
+
+        // Error
+        if (
+          /\berror\b|failed|fehlgeschlagen|nicht unterstützt|not supported/.test(
+            text
+          )
+        )
+        {
+          sawError =
+            true;
+
+          handleFlashState(
+            {
+              state:
+                "error",
+
+              message:
+                text.slice(
+                  0,
+                  180
+                ),
+
+              details:
+              {
+                details:
+                  text.slice(
+                    0,
+                    180
+                  )
+              }
+            }
+          );
+        }
+      };
+
+      // Observe light + shadow DOM text changes
+      const mo =
+        new MutationObserver(
+          () =>
+            scan()
+        );
+
+      mo.observe(
+        dialog,
+        {
+          childList:
+            true,
+
+          subtree:
+            true,
+
+          characterData:
+            true,
+
+          attributes:
+            true
+        }
+      );
+
+      if (dialog.shadowRoot)
+      {
+        mo.observe(
+          dialog.shadowRoot,
+          {
+            childList:
+              true,
+
+            subtree:
+              true,
+
+            characterData:
+              true,
+
+            attributes:
+              true
+          }
+        );
+      }
+
+      // Poll as fallback (shadow updates may not always notify)
+      const poll =
+        setInterval(
+          () =>
+            scan(),
+          500
+        );
+
+      const finishWatch = () =>
+      {
+        clearInterval(
+          poll
+        );
+
+        mo.disconnect();
+
+        // If dialog closed after writing and no explicit finish/error
+        if (
+          sawWriting &&
+          !sawFinished &&
+          !sawError &&
+          !flashDbReported.finished &&
+          !flashDbReported.error
+        )
+        {
+          handleFlashState(
+            {
+              state:
+                "finished",
+
+              message:
+                t("flash_done")
+            }
+          );
+        }
+      };
+
+      dialog.addEventListener(
+        "closed",
+        () =>
+          finishWatch(),
+        { once: true }
+      );
+
+      dialog.addEventListener(
+        "close",
+        () =>
+          finishWatch(),
+        { once: true }
+      );
+
+      // Also state-changed if the dialog ever emits it
+      dialog.addEventListener(
+        "state-changed",
+        (event) =>
+        {
+          handleFlashState(
+            event.detail
+          );
+        }
+      );
+
+      scan();
+    }
+
     const flashDialogObserver =
       new MutationObserver(
         (mutations) =>
@@ -3649,38 +3987,30 @@ let transport =
             for (const node of mutation.addedNodes)
             {
               if (
-                !node ||
-                node.nodeType !==
-                  1
-              )
-              {
-                continue;
-              }
-
-              const tag =
-                (
-                  node.tagName ||
-                  ""
-                )
-                .toUpperCase();
-
-              if (
-                tag ===
-                  "EWT-INSTALL-DIALOG" ||
-                tag.includes(
-                  "INSTALL-DIALOG"
+                isInstallDialog(
+                  node
                 )
               )
               {
-                node.addEventListener(
-                  "state-changed",
-                  (event) =>
-                  {
-                    handleFlashState(
-                      event.detail
-                    );
-                  }
+                watchInstallDialog(
+                  node
                 );
+              }
+              else if (
+                node &&
+                node.querySelectorAll
+              )
+              {
+                node
+                  .querySelectorAll(
+                    "ewt-install-dialog"
+                  )
+                  .forEach(
+                    (el) =>
+                      watchInstallDialog(
+                        el
+                      )
+                  );
               }
             }
           }
@@ -3697,6 +4027,18 @@ let transport =
           true
       }
     );
+
+    // Capture dialogs already present
+    document
+      .querySelectorAll(
+        "ewt-install-dialog"
+      )
+      .forEach(
+        (el) =>
+          watchInstallDialog(
+            el
+          )
+      );
 
 
     /*
