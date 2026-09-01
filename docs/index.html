@@ -293,60 +293,40 @@
     .buy-status.ok { color: var(--success); }
     .buy-status.error { color: var(--error); }
 
-    .paypal-start {
-      margin-top: 0.85rem;
+
+    .wiring-images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+      margin: 1rem 0 0.5rem;
     }
 
-    .paypal-notice {
-      margin-top: 0.85rem;
-      padding: 0.8rem 0.9rem;
+    @media (max-width: 700px) {
+      .wiring-images {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .wiring-images figure {
+      margin: 0;
+      background: #0d1117;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #111820;
-      font-size: 0.82rem;
-      color: var(--muted);
+      border-radius: 10px;
+      overflow: hidden;
     }
 
-    .paypal-notice strong {
-      color: var(--text);
+    .wiring-images img {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: middle;
     }
 
-    .legal {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
+    .wiring-images figcaption {
+      padding: 0.45rem 0.65rem;
       font-size: 0.8rem;
       color: var(--muted);
-    }
-
-    .legal h2 {
-      font-size: 1rem;
-      color: var(--text);
-      margin: 1rem 0 0.45rem;
-    }
-
-    .legal h3 {
-      font-size: 0.9rem;
-      color: var(--text);
-      margin: 0.85rem 0 0.3rem;
-    }
-
-    .legal p {
-      margin: 0.35rem 0;
-    }
-
-    .legal ul {
-      margin-top: 0.35rem;
-      padding-left: 1.2rem;
-    }
-
-    .legal-footer {
-      margin-top: 1.5rem;
-      padding-top: 1rem;
       border-top: 1px solid var(--border);
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--muted);
     }
 
     .wiring-table {
@@ -398,6 +378,23 @@
       font-size: 0.8rem;
 
       color: var(--muted);
+    }
+
+    .legal h3 {
+      margin: 1.1rem 0 0.45rem;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .legal h3:first-child {
+      margin-top: 0;
+    }
+
+    .legal p {
+      margin: 0 0 0.65rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
     .unsupported {
@@ -1070,46 +1067,12 @@
           Lizenz kaufen
         </h3>
         <p class="hint" style="margin:0" data-i18n="buy_hint">
-          Zuerst Hardware-ID lesen. PayPal wird erst nach deiner ausdrücklichen Aktion geladen.
+          Zuerst Hardware-ID lesen, dann mit PayPal bezahlen.
+          Die Device ID wird der Zahlung zugeordnet und die Lizenz automatisch freigeschaltet.
         </p>
         <p class="hint" id="buyDeviceLine" style="margin:0.5rem 0 0">
           Device ID: <code id="buyDeviceId">—</code>
         </p>
-
-        <button
-          type="button"
-          class="btn paypal-start"
-          id="paypalStartBtn"
-          data-i18n="buy_start_btn">
-          PayPal kaufen
-        </button>
-
-        <div
-          class="paypal-notice"
-          id="paypalNotice"
-          hidden>
-          <strong data-i18n="buy_external_title">Hinweis vor PayPal</strong>
-          <span data-i18n="buy_external_text">
-            Mit „PayPal laden“ wird eine Verbindung zu PayPal hergestellt und das PayPal-SDK geladen. PayPal kann dabei eigene Datenverarbeitungen vornehmen. Die Zahlungsabwicklung erfolgt anschließend über PayPal.
-          </span>
-          <div class="actions" style="margin-top:0.7rem">
-            <button
-              type="button"
-              class="btn"
-              id="paypalLoadBtn"
-              data-i18n="buy_load_btn">
-              PayPal laden
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              id="paypalCancelBtn"
-              data-i18n="buy_cancel_btn">
-              Abbrechen
-            </button>
-          </div>
-        </div>
-
         <div id="paypal-button-container"></div>
         <p class="buy-status" id="buyStatus"></p>
       </div>
@@ -1249,11 +1212,36 @@
           </tr>
           <tr>
             <td><code>5V</code></td>
-            <td class="dir" data-i18n="wiring_opt">optional</td>
-            <td data-i18n="wiring_row_5v">5V (ESP vom FC versorgen)</td>
+            <td class="dir">—</td>
+            <td><code>5V</code></td>
           </tr>
         </tbody>
       </table>
+
+      <div class="wiring-images">
+        <figure>
+          <img
+            src="./esp32c3-board.jpg"
+            alt="ESP32-C3 Super Mini Board"
+            loading="lazy"
+            width="640"
+            height="480">
+          <figcaption data-i18n="wiring_img_board">
+            ESP32-C3 Super Mini – Board
+          </figcaption>
+        </figure>
+        <figure>
+          <img
+            src="./esp32c3-pinout.jpg"
+            alt="ESP32-C3 Super Mini Pinout"
+            loading="lazy"
+            width="640"
+            height="480">
+          <figcaption data-i18n="wiring_img_pinout">
+            ESP32-C3 Super Mini – Pinout
+          </figcaption>
+        </figure>
+      </div>
 
       <p class="hint" data-i18n="wiring_bf" style="margin-top:0.85rem;margin-bottom:0">
         Betaflight: Ports → UART wählen → MSP aktivieren · Baud 115200.
@@ -1263,49 +1251,60 @@
 
 
     <!-- ===================================================== -->
-    <!-- LEGAL / PRIVACY -->
+    <!-- LEGAL / DISCLAIMER -->
     <!-- ===================================================== -->
 
-    <div class="legal" id="legal">
+    <div class="card legal">
 
       <h2 data-i18n="legal_title">Hinweise, Haftung und Datenschutz</h2>
 
-      <h3 data-i18n="disclaimer_title">Haftungsausschluss</h3>
-      <p data-i18n="disclaimer_text1">
+      <h3 data-i18n="legal_disc_h">Haftungsausschluss</h3>
+
+      <p data-i18n="legal_disc_p1">
         Die Nutzung der Firmware, des Web-Installers und der zugehörigen Hardware erfolgt auf eigene Verantwortung. Für Schäden, Datenverlust, Ausfälle oder Folgeschäden, die durch die Nutzung, Installation, Konfiguration oder den Betrieb entstehen, wird – soweit gesetzlich zulässig – keine Haftung übernommen.
       </p>
-      <p data-i18n="disclaimer_text2">
+
+      <p data-i18n="legal_disc_p2">
         Es wird keine Garantie dafür übernommen, dass die Software fehlerfrei, jederzeit verfügbar oder mit jeder Hardware-, Firmware- oder Softwarekombination kompatibel ist. Gesetzliche Ansprüche, insbesondere bei Vorsatz, grober Fahrlässigkeit, Verletzung von Leben, Körper oder Gesundheit sowie zwingende gesetzliche Haftung, bleiben unberührt.
       </p>
-      <p data-i18n="disclaimer_text3">
+
+      <p data-i18n="legal_disc_p3">
         GoPro und Betaflight sind Marken ihrer jeweiligen Inhaber. CamBridge ist ein unabhängiges Projekt und steht, soweit nicht ausdrücklich angegeben, nicht in Verbindung mit GoPro oder Betaflight.
       </p>
 
-      <h3 data-i18n="privacy_title">Datenschutz</h3>
-      <p data-i18n="privacy_text1">
-        Diese Website verwendet keine Cookies, keine Analyse-Tools und keine Werbe-Tracker. Es wird keine lokale Cookie-Datei gesetzt. Die Spracheinstellung wird nicht dauerhaft im Browser gespeichert; beim nächsten Besuch wird die Browsersprache erneut verwendet.
-      </p>
-      <p data-i18n="privacy_text2">
-        Für den Web-Installer werden externe Bibliotheken von unpkg geladen. Beim Abruf dieser Bibliotheken kann dein Browser technische Verbindungsdaten wie IP-Adresse und User-Agent an den jeweiligen Dienst übertragen. Diese Verbindungen sind für die jeweilige Funktion des Installers erforderlich.
-      </p>
-      <p data-i18n="privacy_text3">
-        Wenn du die Hardware-ID ausliest oder eine Lizenzprüfung durchführst, wird die dafür benötigte Device ID an den CamBridge-Lizenzserver übertragen. Für Lizenz- und Flash-Vorgänge können technische Angaben wie Device ID, IP-Adresse, Browser/User-Agent, Firmware- und Hardwareinformationen sowie Zeitpunkte serverseitig verarbeitet werden.
-      </p>
-      <p data-i18n="privacy_text4">
-        PayPal wird nicht beim normalen Seitenaufruf geladen. Erst nachdem du den PayPal-Kauf ausdrücklich startest und anschließend das Laden bestätigst, wird eine Verbindung zu PayPal hergestellt. Die Zahlungsabwicklung und die damit verbundene Datenverarbeitung erfolgen durch PayPal nach deren eigenen Datenschutz- und Nutzungsbedingungen.
-      </p>
-      <p data-i18n="privacy_text5">
-        Diese Hinweise ersetzen keine individuelle rechtliche Prüfung. Insbesondere Anbieterkennzeichnung/Impressum, vollständige Datenschutzerklärung und die für digitale Produkte geltenden Verbraucherinformationen sollten vor dem gewerblichen Verkauf rechtlich geprüft und ergänzt werden.
+      <h3 data-i18n="legal_priv_h">Datenschutz</h3>
+
+      <p data-i18n="legal_priv_p1">
+        Diese Website verwendet keine Cookies, keine Analyse-Tools und keine Werbe-Tracker. Die Spracheinstellung kann im Browser (localStorage) gespeichert werden.
       </p>
 
-      <h3 data-i18n="imprint_title">Anbieter / Impressum</h3>
-      <p data-i18n="imprint_text">
+      <p data-i18n="legal_priv_p2">
+        Für den Web-Installer werden externe Bibliotheken (u. a. von unpkg) geladen. Dabei können technische Verbindungsdaten wie IP-Adresse und User-Agent an den jeweiligen Dienst übertragen werden.
+      </p>
+
+      <p data-i18n="legal_priv_p3">
+        Bei Hardware-ID, Lizenzprüfung und Flash-Logging werden benötigte Angaben (z. B. Device ID, IP-Adresse, User-Agent, Firmware-/Hardwareinformationen, Zeitstempel) an den CamBridge-Lizenzserver (Cloudflare Worker) übertragen und dort verarbeitet.
+      </p>
+
+      <p data-i18n="legal_priv_p4">
+        PayPal wird erst geladen, wenn du den Kauf ausdrücklich startest. Die Zahlungsabwicklung und zugehörige Datenverarbeitung erfolgen durch PayPal nach deren eigenen Bedingungen.
+      </p>
+
+      <p data-i18n="legal_priv_p5">
+        Diese Hinweise ersetzen keine individuelle rechtliche Prüfung. Impressum, vollständige Datenschutzerklärung und Verbraucherinformationen sollten vor gewerblichem Verkauf rechtlich geprüft und ergänzt werden.
+      </p>
+
+      <h3 data-i18n="legal_imp_h">Anbieter / Impressum</h3>
+
+      <p data-i18n="legal_imp_p">
         Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) eintragen, bevor die Website gewerblich betrieben wird.
       </p>
 
-      <div class="legal-footer" data-i18n="legal_footer">
-        Keine Cookies · Keine Analyse- oder Werbe-Tracker · PayPal erst nach ausdrücklicher Aktion
-      </div>
+      <footer style="margin-top:1rem">
+        <span data-i18n="legal_footer">Not affiliated with GoPro or Betaflight</span>
+        ·
+        <a href="https://github.com/arendtchris/CamBridge">Repository</a>
+      </footer>
 
     </div>
 
@@ -1365,25 +1364,6 @@
         buy_fail: "Zahlung fehlgeschlagen.",
         buy_already: "Dieses Gerät ist bereits lizenziert.",
         buy_not_cfg: "PayPal ist noch nicht konfiguriert.",
-        buy_start_btn: "PayPal kaufen",
-        buy_external_title: "Hinweis vor PayPal",
-        buy_external_text: "Mit „PayPal laden“ wird eine Verbindung zu PayPal hergestellt und das PayPal-SDK geladen. PayPal kann dabei eigene Datenverarbeitungen vornehmen. Die Zahlungsabwicklung erfolgt anschließend über PayPal.",
-        buy_load_btn: "PayPal laden",
-        buy_cancel_btn: "Abbrechen",
-        legal_title: "Hinweise, Haftung und Datenschutz",
-        disclaimer_title: "Haftungsausschluss",
-        disclaimer_text1: "Die Nutzung der Firmware, des Web-Installers und der zugehörigen Hardware erfolgt auf eigene Verantwortung. Für Schäden, Datenverlust, Ausfälle oder Folgeschäden, die durch die Nutzung, Installation, Konfiguration oder den Betrieb entstehen, wird – soweit gesetzlich zulässig – keine Haftung übernommen.",
-        disclaimer_text2: "Es wird keine Garantie dafür übernommen, dass die Software fehlerfrei, jederzeit verfügbar oder mit jeder Hardware-, Firmware- oder Softwarekombination kompatibel ist. Gesetzliche Ansprüche, insbesondere bei Vorsatz, grober Fahrlässigkeit, Verletzung von Leben, Körper oder Gesundheit sowie zwingende gesetzliche Haftung, bleiben unberührt.",
-        disclaimer_text3: "GoPro und Betaflight sind Marken ihrer jeweiligen Inhaber. CamBridge ist ein unabhängiges Projekt und steht, soweit nicht ausdrücklich angegeben, nicht in Verbindung mit GoPro oder Betaflight.",
-        privacy_title: "Datenschutz",
-        privacy_text1: "Diese Website verwendet keine Cookies, keine Analyse-Tools und keine Werbe-Tracker. Es wird keine lokale Cookie-Datei gesetzt. Die Spracheinstellung wird nicht dauerhaft im Browser gespeichert; beim nächsten Besuch wird die Browsersprache erneut verwendet.",
-        privacy_text2: "Für den Web-Installer werden externe Bibliotheken von unpkg geladen. Beim Abruf dieser Bibliotheken kann dein Browser technische Verbindungsdaten wie IP-Adresse und User-Agent an den jeweiligen Dienst übertragen. Diese Verbindungen sind für die jeweilige Funktion des Installers erforderlich.",
-        privacy_text3: "Wenn du die Hardware-ID ausliest oder eine Lizenzprüfung durchführst, wird die dafür benötigte Device ID an den CamBridge-Lizenzserver übertragen. Für Lizenz- und Flash-Vorgänge können technische Angaben wie Device ID, IP-Adresse, Browser/User-Agent, Firmware- und Hardwareinformationen sowie Zeitpunkte serverseitig verarbeitet werden.",
-        privacy_text4: "PayPal wird nicht beim normalen Seitenaufruf geladen. Erst nachdem du den PayPal-Kauf ausdrücklich startest und anschließend das Laden bestätigst, wird eine Verbindung zu PayPal hergestellt. Die Zahlungsabwicklung und die damit verbundene Datenverarbeitung erfolgen durch PayPal nach deren eigenen Datenschutz- und Nutzungsbedingungen.",
-        privacy_text5: "Diese Hinweise ersetzen keine individuelle rechtliche Prüfung. Insbesondere Anbieterkennzeichnung/Impressum, vollständige Datenschutzerklärung und die für digitale Produkte geltenden Verbraucherinformationen sollten vor dem gewerblichen Verkauf rechtlich geprüft und ergänzt werden.",
-        imprint_title: "Anbieter / Impressum",
-        imprint_text: "Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) eintragen, bevor die Website gewerblich betrieben wird.",
-        legal_footer: "Keine Cookies · Keine Analyse- oder Werbe-Tracker · PayPal erst nach ausdrücklicher Aktion",
         serial_title: "ESP32 Serial Monitor",
         serial_disconnected: "Nicht verbunden",
         serial_connected: "USB Serial verbunden · 115200",
@@ -1406,6 +1386,36 @@
         wiring_opt: "optional",
         wiring_row_5v: "5V (ESP vom FC versorgen)",
         wiring_bf: "Betaflight: Ports → UART wählen → MSP aktivieren · Baud 115200.",
+        wiring_img_board: "ESP32-C3 Super Mini – Board",
+        wiring_img_pinout: "ESP32-C3 Super Mini – Pinout",
+        legal_title: "Notices, liability and privacy",
+        legal_disc_h: "Disclaimer",
+        legal_disc_p1: "Use of the firmware, web installer and related hardware is at your own risk. To the extent permitted by law, no liability is accepted for damage, data loss, outages or consequential damage arising from use, installation, configuration or operation.",
+        legal_disc_p2: "No warranty is given that the software is error-free, always available, or compatible with every hardware, firmware or software combination. Mandatory legal rights — including in cases of intent, gross negligence, or injury to life, body or health — remain unaffected.",
+        legal_disc_p3: "GoPro and Betaflight are trademarks of their respective owners. CamBridge is an independent project and, unless expressly stated, is not affiliated with GoPro or Betaflight.",
+        legal_priv_h: "Privacy",
+        legal_priv_p1: "This website does not use cookies, analytics tools or advertising trackers. Language preference may be stored in the browser (localStorage).",
+        legal_priv_p2: "The web installer loads external libraries (e.g. from unpkg). Technical connection data such as IP address and user agent may be transmitted to those services.",
+        legal_priv_p3: "When reading the hardware ID, checking a license or logging flashes, required data (e.g. device ID, IP address, user agent, firmware/hardware info, timestamps) is sent to the CamBridge license server (Cloudflare Worker) for processing.",
+        legal_priv_p4: "PayPal is only loaded after you explicitly start a purchase. Payment processing and related data processing are handled by PayPal under their own terms.",
+        legal_priv_p5: "These notes are not a substitute for individual legal advice. Before commercial sale, imprint, a full privacy policy and consumer information should be reviewed and completed as required by law.",
+        legal_imp_h: "Provider / legal notice",
+        legal_imp_p: "Please insert the legally required provider details (name, serviceable address and any other mandatory information) before operating this website commercially.",
+        legal_footer: "Not affiliated with GoPro or Betaflight",
+        legal_title: "Hinweise, Haftung und Datenschutz",
+        legal_disc_h: "Haftungsausschluss",
+        legal_disc_p1: "Die Nutzung der Firmware, des Web-Installers und der zugehörigen Hardware erfolgt auf eigene Verantwortung. Für Schäden, Datenverlust, Ausfälle oder Folgeschäden, die durch die Nutzung, Installation, Konfiguration oder den Betrieb entstehen, wird – soweit gesetzlich zulässig – keine Haftung übernommen.",
+        legal_disc_p2: "Es wird keine Garantie dafür übernommen, dass die Software fehlerfrei, jederzeit verfügbar oder mit jeder Hardware-, Firmware- oder Softwarekombination kompatibel ist. Gesetzliche Ansprüche, insbesondere bei Vorsatz, grober Fahrlässigkeit, Verletzung von Leben, Körper oder Gesundheit sowie zwingende gesetzliche Haftung, bleiben unberührt.",
+        legal_disc_p3: "GoPro und Betaflight sind Marken ihrer jeweiligen Inhaber. CamBridge ist ein unabhängiges Projekt und steht, soweit nicht ausdrücklich angegeben, nicht in Verbindung mit GoPro oder Betaflight.",
+        legal_priv_h: "Datenschutz",
+        legal_priv_p1: "Diese Website verwendet keine Cookies, keine Analyse-Tools und keine Werbe-Tracker. Die Spracheinstellung kann im Browser (localStorage) gespeichert werden.",
+        legal_priv_p2: "Für den Web-Installer werden externe Bibliotheken (u. a. von unpkg) geladen. Dabei können technische Verbindungsdaten wie IP-Adresse und User-Agent an den jeweiligen Dienst übertragen werden.",
+        legal_priv_p3: "Bei Hardware-ID, Lizenzprüfung und Flash-Logging werden benötigte Angaben (z. B. Device ID, IP-Adresse, User-Agent, Firmware-/Hardwareinformationen, Zeitstempel) an den CamBridge-Lizenzserver (Cloudflare Worker) übertragen und dort verarbeitet.",
+        legal_priv_p4: "PayPal wird erst geladen, wenn du den Kauf ausdrücklich startest. Die Zahlungsabwicklung und zugehörige Datenverarbeitung erfolgen durch PayPal nach deren eigenen Bedingungen.",
+        legal_priv_p5: "Diese Hinweise ersetzen keine individuelle rechtliche Prüfung. Impressum, vollständige Datenschutzerklärung und Verbraucherinformationen sollten vor gewerblichem Verkauf rechtlich geprüft und ergänzt werden.",
+        legal_imp_h: "Anbieter / Impressum",
+        legal_imp_p: "Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) eintragen, bevor die Website gewerblich betrieben wird.",
+        legal_footer: "Nicht verbunden mit GoPro oder Betaflight",
         st_pick_port: "Port wählen …",
         st_https: "Seite muss über HTTPS oder localhost laufen (nicht file://).",
         st_no_serial: "Web Serial nicht verfügbar.",
@@ -1479,25 +1489,6 @@
         buy_fail: "Payment failed.",
         buy_already: "This device is already licensed.",
         buy_not_cfg: "PayPal is not configured yet.",
-        buy_start_btn: "Buy with PayPal",
-        buy_external_title: "Notice before PayPal",
-        buy_external_text: "Selecting “Load PayPal” connects to PayPal and loads the PayPal SDK. PayPal may process data according to its own policies. Payment is then handled by PayPal.",
-        buy_load_btn: "Load PayPal",
-        buy_cancel_btn: "Cancel",
-        legal_title: "Notices, liability and privacy",
-        disclaimer_title: "Disclaimer",
-        disclaimer_text1: "Use of the firmware, web installer and associated hardware is at your own risk. To the extent permitted by law, no liability is assumed for damage, data loss, failures or consequential damages arising from use, installation, configuration or operation.",
-        disclaimer_text2: "No guarantee is given that the software is error-free, continuously available or compatible with every hardware, firmware or software combination. Statutory claims, in particular for intent, gross negligence, injury to life, body or health, and mandatory statutory liability remain unaffected.",
-        disclaimer_text3: "GoPro and Betaflight are trademarks of their respective owners. CamBridge is an independent project and, unless expressly stated otherwise, is not affiliated with GoPro or Betaflight.",
-        privacy_title: "Privacy",
-        privacy_text1: "This website uses no cookies, analytics tools or advertising trackers. No cookie file is set. The language preference is not stored permanently in the browser; the browser language is detected again on the next visit.",
-        privacy_text2: "The web installer loads external libraries from unpkg. When these libraries are requested, your browser may transmit technical connection data such as IP address and user agent to the respective service. These connections are required for the installer's functionality.",
-        privacy_text3: "When you read the hardware ID or perform a license check, the required Device ID is transmitted to the CamBridge license server. License and flashing operations may process technical information such as Device ID, IP address, browser/user agent, firmware and hardware information, and timestamps on the server.",
-        privacy_text4: "PayPal is not loaded during a normal page visit. Only after you explicitly start the PayPal purchase and then confirm loading is a connection to PayPal established. Payment processing and associated data processing are performed by PayPal under its own privacy and terms.",
-        privacy_text5: "These notices do not replace an individual legal review. In particular, the legal notice/imprint, full privacy policy and consumer information required for digital products should be legally reviewed and completed before commercial operation.",
-        imprint_title: "Provider / Legal notice",
-        imprint_text: "Please enter the legally required provider information (name, serviceable address and any other mandatory details) here before operating the website commercially.",
-        legal_footer: "No cookies · No analytics or advertising trackers · PayPal only after explicit action",
 
         serial_title: "ESP32 Serial Monitor",
         serial_disconnected: "Disconnected",
@@ -1521,6 +1512,8 @@
         wiring_opt: "optional",
         wiring_row_5v: "5V (power ESP from FC)",
         wiring_bf: "Betaflight: Ports → select UART → enable MSP · baud 115200.",
+        wiring_img_board: "ESP32-C3 Super Mini – Board",
+        wiring_img_pinout: "ESP32-C3 Super Mini – Pinout",
         st_pick_port: "Select port…",
         st_https: "Page must run over HTTPS or localhost (not file://).",
         st_no_serial: "Web Serial not available.",
@@ -1558,9 +1551,12 @@
     };
 
     let currentLang =
-      (navigator.language || "").toLowerCase().startsWith("de")
-        ? "de"
-        : "en";
+      localStorage.getItem("cambridge_lang") ||
+      (
+        (navigator.language || "").toLowerCase().startsWith("de")
+          ? "de"
+          : "en"
+      );
 
     if (
       currentLang !== "de" &&
@@ -1604,6 +1600,11 @@
         lang === "de"
           ? "de"
           : "en";
+
+      localStorage.setItem(
+        "cambridge_lang",
+        currentLang
+      );
 
       document.documentElement.lang =
         currentLang;
@@ -3090,8 +3091,8 @@ let transport =
             "—";
         }
 
-        // PayPal is intentionally NOT initialized here.
-        // The SDK is loaded only after an explicit user action.
+        // Re-init PayPal buttons when device ID known
+        initPayPalButtons();
 
 
         firmwareEl.textContent =
@@ -4927,75 +4928,11 @@ let transport =
     firmwareEl.textContent =
       FIRMWARE_VERSION;
 
-    const paypalStartBtn =
-      document.getElementById("paypalStartBtn");
-
-    const paypalLoadBtn =
-      document.getElementById("paypalLoadBtn");
-
-    const paypalCancelBtn =
-      document.getElementById("paypalCancelBtn");
-
-    const paypalNotice =
-      document.getElementById("paypalNotice");
-
     setBuyStatus(
       t("buy_need_id")
     );
 
-    function showPayPalNotice()
-    {
-      if (!lastDeviceId)
-      {
-        setBuyStatus(
-          t("buy_need_id"),
-          "error"
-        );
-        return;
-      }
-
-      if (paypalNotice)
-        paypalNotice.hidden = false;
-
-      if (paypalStartBtn)
-        paypalStartBtn.hidden = true;
-    }
-
-    function hidePayPalNotice()
-    {
-      if (paypalNotice)
-        paypalNotice.hidden = true;
-
-      if (paypalStartBtn)
-        paypalStartBtn.hidden = false;
-    }
-
-    paypalStartBtn?.addEventListener(
-      "click",
-      showPayPalNotice
-    );
-
-    paypalCancelBtn?.addEventListener(
-      "click",
-      hidePayPalNotice
-    );
-
-    paypalLoadBtn?.addEventListener(
-      "click",
-      async () =>
-      {
-        if (paypalLoadBtn)
-          paypalLoadBtn.disabled = true;
-
-        if (paypalCancelBtn)
-          paypalCancelBtn.disabled = true;
-
-        await initPayPalButtons();
-
-        if (paypalNotice)
-          paypalNotice.hidden = true;
-      }
-    );
+    initPayPalButtons();
 
 
     serialOutputEl.textContent = "";
