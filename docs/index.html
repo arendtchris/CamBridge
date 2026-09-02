@@ -97,6 +97,23 @@
       margin-bottom: 1rem;
     }
 
+
+    .support-info {
+      margin: -0.35rem 0 1.25rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #161b22;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .support-info strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
     p.lead {
       color: var(--muted);
 
@@ -744,7 +761,7 @@
   <div class="wrap">
 
     <div class="top-bar">
-      <span class="tag">ESP32-C3</span>
+      <span class="tag">ESP32-C3 · ESP32-C6</span>
       <div class="lang-switch" role="group" aria-label="Language">
         <button type="button" id="langDe" data-lang="de" class="active">DE</button>
         <button type="button" id="langEn" data-lang="en">EN</button>
@@ -756,6 +773,10 @@
     <p class="lead" data-i18n="lead">
       Firmware aus dem Browser flashen (Chrome / Edge).
       GoPro-Status ins Betaflight-OSD über MSP.
+    </p>
+
+    <p class="support-info" data-i18n-html="support_info">
+      <strong>Support:</strong> GoPro Hero 9 und neuer · Boards: ESP32-C3, ESP32-C6
     </p>
 
 
@@ -1297,13 +1318,16 @@
       <h3 data-i18n="legal_imp_h">Anbieter / Impressum</h3>
 
       <p data-i18n="legal_imp_p">
-        Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) eintragen, bevor die Website gewerblich betrieben wird.
+        Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) ergänzen.
+      </p>
+
+      <p>
+        <span data-i18n="legal_contact_label">Kontakt</span>:
+        <a href="mailto:chrisfpvmuc@gmail.com">chrisfpvmuc@gmail.com</a>
       </p>
 
       <footer style="margin-top:1rem">
         <span data-i18n="legal_footer">Not affiliated with GoPro or Betaflight</span>
-        ·
-        <a href="https://github.com/arendtchris/CamBridge">Repository</a>
       </footer>
 
     </div>
@@ -1327,6 +1351,7 @@
     const I18N = {
       de: {
         lead: "Firmware aus dem Browser flashen (Chrome / Edge). GoPro-Status ins Betaflight-OSD über MSP.",
+        support_info: "<strong>Support:</strong> GoPro Hero 9 und neuer · Boards: ESP32-C3, ESP32-C6",
         install_title: "Install",
         install_li1: "Daten-USB-Kabel verwenden, Serial Monitor / andere Tools am Port schließen.",
         install_li2: "ESP32 direkt am PC anschließen (nicht nur über den Flight Controller).",
@@ -1432,12 +1457,14 @@
         legal_priv_p4: "PayPal wird erst geladen, wenn du den Kauf ausdrücklich startest. Die Zahlungsabwicklung und zugehörige Datenverarbeitung erfolgen durch PayPal nach deren eigenen Bedingungen.",
         legal_priv_p5: "Diese Hinweise ersetzen keine individuelle rechtliche Prüfung. Impressum, vollständige Datenschutzerklärung und Verbraucherinformationen sollten vor gewerblichem Verkauf rechtlich geprüft und ergänzt werden.",
         legal_imp_h: "Anbieter / Impressum",
-        legal_imp_p: "Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) eintragen, bevor die Website gewerblich betrieben wird.",
+        legal_imp_p: "Bitte hier die gesetzlich erforderlichen Anbieterangaben (Name, ladungsfähige Anschrift und ggf. weitere Pflichtangaben) ergänzen.",
+        legal_contact_label: "Kontakt",
         legal_footer: "Nicht verbunden mit GoPro oder Betaflight",
 title: "GoPro CamBridge – Web Installer"
       },
       en: {
         lead: "Flash firmware from the browser (Chrome / Edge). Puts GoPro status into Betaflight OSD over MSP.",
+        support_info: "<strong>Support:</strong> GoPro Hero 9 and newer · Boards: ESP32-C3, ESP32-C6",
         install_title: "Install",
         install_li1: "Use a data USB cable and close Serial Monitor / other tools using the port.",
         install_li2: "Connect the ESP32 directly to the PC (not only via the flight controller).",
@@ -1544,7 +1571,8 @@ title: "GoPro CamBridge – Web Installer"
         legal_priv_p4: "PayPal is only loaded after you explicitly start a purchase. Payment processing and related data processing are handled by PayPal under their own terms.",
         legal_priv_p5: "These notes are not a substitute for individual legal advice. Before commercial sale, imprint, a full privacy policy and consumer information should be reviewed and completed as required by law.",
         legal_imp_h: "Provider / legal notice",
-        legal_imp_p: "Please insert the legally required provider details (name, serviceable address and any other mandatory information) before operating this website commercially.",
+        legal_imp_p: "Please complete the legally required provider details (name, serviceable address and any other mandatory information).",
+        legal_contact_label: "Contact",
         legal_footer: "Not affiliated with GoPro or Betaflight",
 title: "GoPro CamBridge – Web Installer"
       }
@@ -4624,6 +4652,7 @@ let transport =
                 "script"
               );
 
+            // Only PayPal wallet — no card / SEPA / pay later / etc.
             script.src =
               "https://www.paypal.com/sdk/js?client-id=" +
               encodeURIComponent(
@@ -4633,6 +4662,11 @@ let transport =
               encodeURIComponent(
                 currency ||
                 "EUR"
+              ) +
+              "&enable-funding=paypal" +
+              "&disable-funding=" +
+              encodeURIComponent(
+                "card,credit,paylater,venmo,sepa,bancontact,eps,giropay,ideal,mybank,p24,sofort,blik"
               );
 
             script.onload =
@@ -4725,6 +4759,10 @@ let transport =
         window.paypal
           .Buttons(
             {
+              // Render only the PayPal button (no card fields)
+              fundingSource:
+                window.paypal.FUNDING.PAYPAL,
+
               style:
               {
                 layout:
@@ -4734,7 +4772,7 @@ let transport =
                 shape:
                   "rect",
                 label:
-                  "pay"
+                  "paypal"
               },
 
               createOrder:
