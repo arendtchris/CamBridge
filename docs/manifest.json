@@ -1,6 +1,6 @@
 {
   "name": "GoPro CamBridge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "new_install_prompt_erase": true,
   "builds": [
     {
@@ -10,6 +10,15 @@
         { "path": "firmware/esp32c3/GoProBridgeBle.ino.partitions.bin", "offset": 32768 },
         { "path": "firmware/esp32c3/boot_app0.bin", "offset": 57344 },
         { "path": "firmware/esp32c3/GoProBridgeBle.ino.bin", "offset": 65536 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C6",
+      "parts": [
+        { "path": "firmware/esp32c6/GoProBridgeBle.ino.bootloader.bin", "offset": 0 },
+        { "path": "firmware/esp32c6/GoProBridgeBle.ino.partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32c6/boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/esp32c6/GoProBridgeBle.ino.bin", "offset": 65536 }
       ]
     }
   ]
